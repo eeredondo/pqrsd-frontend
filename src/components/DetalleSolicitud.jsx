@@ -31,7 +31,7 @@ function DetalleSolicitud() {
 
   const obtenerResponsables = async () => {
     try {
-      const res = await axios.get("${import.meta.env.VITE_API_URL}/usuarios/", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const soloResponsables = res.data.filter((u) => u.rol === "responsable");
