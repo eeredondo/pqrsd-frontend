@@ -12,8 +12,9 @@ function PanelFinalizador() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    if (!token) return;
     fetchFirmadas();
-  }, []);
+  }, [token]);
 
   const fetchFirmadas = async () => {
     try {
