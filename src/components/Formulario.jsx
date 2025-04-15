@@ -31,7 +31,7 @@ function Formulario() {
     formData.append("archivo", archivo);
 
     try {
-      await axios.post("${import.meta.env.VITE_API_URL}/solicitudes/", formData);
+      await axios.post(`${import.meta.env.VITE_API_URL}/solicitudes/`, formData);
       navigate("/exito");
     } catch (err) {
       console.error(err);
