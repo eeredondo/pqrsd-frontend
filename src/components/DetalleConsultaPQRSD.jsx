@@ -61,13 +61,8 @@ function DetalleConsultaPQRSD() {
 
       <h2 className="text-2xl font-bold text-blue-800 mb-4">Detalle de la PQRSD</h2>
 
-      {/* Pestañas */}
       <div className="flex gap-4 border-b mb-6">
-        {[
-          { key: "datos", label: "Datos del Peticionario" },
-          { key: "pqrsd", label: "PQRSD" },
-          { key: "trazabilidad", label: "Trazabilidad" },
-        ].map(({ key, label }) => (
+        {["datos", "pqrsd", "trazabilidad"].map((key) => (
           <button
             key={key}
             onClick={() => setPestana(key)}
@@ -77,12 +72,13 @@ function DetalleConsultaPQRSD() {
                 : "border-transparent text-gray-500 hover:text-blue-600"
             }`}
           >
-            {label}
+            {key === "datos" && "Datos del Peticionario"}
+            {key === "pqrsd" && "PQRSD"}
+            {key === "trazabilidad" && "Trazabilidad"}
           </button>
         ))}
       </div>
 
-      {/* Datos del peticionario */}
       {pestana === "datos" && (
         <div className="bg-white border rounded-xl p-6 shadow-md space-y-2 max-w-3xl mx-auto text-sm">
           <p><strong>Radicado:</strong> <span className="font-mono">{solicitud.radicado}</span></p>
@@ -101,7 +97,6 @@ function DetalleConsultaPQRSD() {
         </div>
       )}
 
-      {/* Mensaje y archivos */}
       {pestana === "pqrsd" && (
         <div className="bg-white border rounded-xl p-6 shadow-md max-w-6xl mx-auto space-y-6">
           <div>
@@ -162,7 +157,6 @@ function DetalleConsultaPQRSD() {
         </div>
       )}
 
-      {/* Trazabilidad */}
       {pestana === "trazabilidad" && (
         <div className="bg-white border rounded-xl p-6 shadow-md max-w-6xl mx-auto">
           <h3 className="text-lg font-semibold mb-4 text-gray-700">📌 Trazabilidad del Proceso</h3>
