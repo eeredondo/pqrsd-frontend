@@ -17,7 +17,7 @@ function PanelFirmante() {
 
   const fetchSolicitudesRevisadas = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const revisadas = res.data.filter((s) => s.estado === "Revisado");
