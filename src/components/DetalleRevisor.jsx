@@ -94,7 +94,6 @@ function DetalleRevisor() {
 
       {pestana === "pqrsd" && (
         <div className="bg-white border rounded-xl p-6 shadow-md space-y-6 max-w-6xl mx-auto">
-
           <div>
             <h3 className="text-sm text-gray-600 font-medium">📎 Archivo del ciudadano:</h3>
             {solicitud.archivo ? (
