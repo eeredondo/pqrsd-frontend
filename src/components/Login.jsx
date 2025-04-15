@@ -17,11 +17,12 @@ function Login() {
     datos.append("password", contraseña);
 
     try {
-      const res = await axios.post("${import.meta.env.VITE_API_URL}/usuarios/login", datos, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/usuarios/login`, datos, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
+
       const { access_token, rol, id, nombre } = res.data;
 
       localStorage.setItem("token", access_token);
