@@ -26,7 +26,7 @@ function PanelAdmin() {
 
   const obtenerUsuarios = async () => {
     try {
-      const res = await axios.get("${import.meta.env.VITE_API_URL}/usuarios", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsuarios(res.data);
@@ -47,7 +47,7 @@ function PanelAdmin() {
 
     try {
       setLoading(true);
-      await axios.post("${import.meta.env.VITE_API_URL}/usuarios", nuevo, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/usuarios`, nuevo, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("✅ Usuario creado exitosamente");
