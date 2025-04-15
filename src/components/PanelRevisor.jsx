@@ -23,7 +23,7 @@ function PanelRevisor() {
 
   const fetchSolicitudes = async () => {
     try {
-      const res = await axios.get("${import.meta.env.VITE_API_URL}/solicitudes/", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const enRevision = res.data.filter((s) => s.estado === "En revisión");
