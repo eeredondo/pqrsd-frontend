@@ -41,7 +41,7 @@ function PanelAsignador() {
 
   const fetchSolicitudes = async () => {
     try {
-      const res = await axios.get("${import.meta.env.VITE_API_URL}/solicitudes/", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const pendientes = res.data.filter((s) => s.estado === "Pendiente");
@@ -65,7 +65,6 @@ function PanelAsignador() {
     <div className="relative">
       <ResumenCards />
 
-      {/* Tarjeta emergente (sin click) */}
       {nuevaNotificacion && (
         <div className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg w-96 z-50 animate-bounce pointer-events-none">
           <h4 className="font-bold text-lg mb-1">📬 Nueva solicitud recibida</h4>
@@ -75,7 +74,6 @@ function PanelAsignador() {
         </div>
       )}
 
-      {/* Campana de notificaciones */}
       <div className="absolute top-0 right-0 mt-4 mr-6 z-40">
         <button onClick={() => setMostrarPanel(!mostrarPanel)} className="relative">
           <Bell className="text-blue-700 w-6 h-6" />
