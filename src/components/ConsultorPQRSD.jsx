@@ -24,7 +24,7 @@ function ConsultorPQRSD() {
 
   const cargarSolicitudes = async () => {
     try {
-      const res = await axios.get("${import.meta.env.VITE_API_URL}/solicitudes/", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSolicitudes(res.data);
@@ -165,7 +165,6 @@ function ConsultorPQRSD() {
         </table>
       </div>
 
-      {/* Paginación */}
       <div className="flex justify-center mt-4 space-x-2">
         {Array.from({ length: totalPaginas }, (_, i) => (
           <button
