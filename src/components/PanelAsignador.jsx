@@ -116,23 +116,55 @@ function PanelAsignador() {
   return (
     <div className="relative p-6">
 
-      {/* MINI PERFIL */}
-      <div className="absolute top-0 left-0 mt-4 ml-6 flex items-center gap-2">
-        <div className="bg-blue-100 p-2 rounded-full">
-          <User className="text-blue-600" size={20} />
+      {/* HEADER ELEGANTE */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2 text-blue-700 font-semibold">
+          <User size={20} />
+          <span>{obtenerNombreUsuario()}</span>
+          <span className="text-gray-400">|</span>
+          <span className="text-gray-600 text-sm capitalize">{usuario?.rol}</span>
+          <span className="text-gray-400">|</span>
+          <span className="text-gray-600 text-sm">{fechaHoy}</span>
         </div>
-        <span className="text-blue-700 font-semibold text-sm">{obtenerNombreUsuario()}</span>
+
+        <div className="relative">
+          <button onClick={() => setMostrarPanel(!mostrarPanel)} className="relative">
+            <Bell className="text-blue-700 w-6 h-6" />
+            {notificaciones.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+                {notificaciones.length}
+              </span>
+            )}
+          </button>
+
+          {mostrarPanel && (
+            <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border rounded-lg z-50 max-h-96 overflow-y-auto">
+              <div className="p-3 border-b font-bold text-blue-800">Notificaciones</div>
+              {notificaciones.length === 0 ? (
+                <div className="p-3 text-gray-500 text-sm">No hay notificaciones.</div>
+              ) : (
+                <ul className="divide-y">
+                  {notificaciones.map((n, idx) => (
+                    <li key={idx} className="p-3">
+                      <p className="text-sm text-blue-800 font-semibold">{n.radicado}</p>
+                      <p className="text-xs text-gray-600">{n.nombre} {n.apellido}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* SALUDO Y FECHA */}
-      <h1 className="text-2xl font-bold mb-1 mt-14">
-        {saludo}, {obtenerNombreUsuario()}
-      </h1>
-      <p className="text-gray-500 text-sm">{fechaHoy}</p>
-      <p className="text-indigo-600 font-semibold mt-3">{mensajeMotivacional}</p>
+      {/* SALUDO Y MOTIVACIÓN */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">{saludo}, {obtenerNombreUsuario()} 👋</h1>
+        <p className="text-indigo-600 font-semibold mt-1">{mensajeMotivacional}</p>
+      </div>
 
       {/* TARJETAS DE RESUMEN */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-blue-100 p-2 rounded-full">📥</div>
           <div>
@@ -164,48 +196,8 @@ function PanelAsignador() {
         </div>
       </div>
 
-      {/* NOTIFICACIONES */}
-      {nuevaNotificacion && (
-        <div className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg w-96 z-50 animate-bounce pointer-events-none">
-          <h4 className="font-bold text-lg mb-1">📬 Nueva solicitud recibida</h4>
-          <p><strong>Radicado:</strong> {nuevaNotificacion.radicado}</p>
-          <p><strong>Peticionario:</strong> {nuevaNotificacion.nombre} {nuevaNotificacion.apellido}</p>
-          <p className="text-sm mt-2 opacity-80">Ve a detalles para ver más información</p>
-        </div>
-      )}
-
-      {/* BOTÓN NOTIFICACIONES */}
-      <div className="absolute top-0 right-0 mt-4 mr-6 z-40">
-        <button onClick={() => setMostrarPanel(!mostrarPanel)} className="relative">
-          <Bell className="text-blue-700 w-6 h-6" />
-          {notificaciones.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-              {notificaciones.length}
-            </span>
-          )}
-        </button>
-
-        {mostrarPanel && (
-          <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border rounded-lg z-50 max-h-96 overflow-y-auto">
-            <div className="p-3 border-b font-bold text-blue-800">Notificaciones</div>
-            {notificaciones.length === 0 ? (
-              <div className="p-3 text-gray-500 text-sm">No hay notificaciones.</div>
-            ) : (
-              <ul className="divide-y">
-                {notificaciones.map((n, idx) => (
-                  <li key={idx} className="p-3">
-                    <p className="text-sm text-blue-800 font-semibold">{n.radicado}</p>
-                    <p className="text-xs text-gray-600">{n.nombre} {n.apellido}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* TABLA DE SOLICITUDES */}
-      <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4">Solicitudes sin asignar</h2>
+      {/* TABLA SOLICITUDES */}
+      <h2 className="text-xl font-bold text-gray-800 mb-4">Solicitudes sin asignar</h2>
 
       {cargando ? (
         <div className="flex justify-center items-center my-10">
