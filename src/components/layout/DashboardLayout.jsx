@@ -26,57 +26,35 @@ function DashboardLayout({ children }) {
 
   if (usuario?.rol === "asignador") {
     navItems.push(
-      {
-        to: "/asignador",
-        label: "Solicitudes por asignar",
-        icon: <LayoutDashboard size={18} />,
-      },
-      {
-        to: "/finalizar",
-        label: "Finalizar solicitudes",
-        icon: <PencilRuler size={18} />,
-      }
+      { to: "/asignador", label: "Solicitudes por asignar", icon: <LayoutDashboard size={18} /> },
+      { to: "/finalizar", label: "Finalizar solicitudes", icon: <PencilRuler size={18} /> }
     );
   }
 
   if (usuario?.rol === "responsable") {
-    navItems.push({
-      to: "/responsable",
-      label: "Solicitudes asignadas",
-      icon: <UserCheck size={18} />,
-    });
+    navItems.push({ to: "/responsable", label: "Solicitudes asignadas", icon: <UserCheck size={18} /> });
   }
 
   if (usuario?.rol === "revisor") {
-    navItems.push({
-      to: "/revisor",
-      label: "Panel Revisor",
-      icon: <FileText size={18} />,
-    });
+    navItems.push({ to: "/revisor", label: "Panel Revisor", icon: <FileText size={18} /> });
   }
 
   if (usuario?.rol === "firmante") {
-    navItems.push({
-      to: "/firmante",
-      label: "Panel Firmante",
-      icon: <FileText size={18} />,
-    });
+    navItems.push({ to: "/firmante", label: "Panel Firmante", icon: <FileText size={18} /> });
   }
 
-  // ✅ Panel Admin (si el usuario tiene rol admin)
   if (usuario?.rol === "admin") {
-    navItems.push({
-      to: "/admin",
-      label: "Panel Admin",
-      icon: <ShieldCheck size={18} />,
-    });
+    navItems.push({ to: "/admin", label: "Panel Admin", icon: <ShieldCheck size={18} /> });
   }
 
-  // 🔍 Consultor visible para todos
-  navItems.push({
-    to: "/consultor",
-    label: "Consultor PQRSD",
-    icon: <FileSearch size={18} />,
+  navItems.push({ to: "/consultor", label: "Consultor PQRSD", icon: <FileSearch size={18} /> });
+
+  // Función para formatear la fecha
+  const fechaHoy = new Date().toLocaleDateString("es-CO", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
   });
 
   return (
@@ -118,11 +96,15 @@ function DashboardLayout({ children }) {
 
       {/* Contenido */}
       <main className="flex-1 p-6 bg-gray-50">
+        {/* CABECERA DE BIENVENIDA MEJORADA */}
         <div className="bg-white p-4 rounded shadow mb-6 border border-gray-200">
-          <h1 className="text-xl font-bold text-blue-800">
-            Bienvenido, {usuario?.nombre}
-          </h1>
+          <h1 className="text-xl font-bold text-blue-800">Bienvenido, {usuario?.nombre}</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Rol: <span className="capitalize">{usuario?.rol}</span> | Fecha: {fechaHoy}
+          </p>
         </div>
+
+        {/* CONTENIDO PRINCIPAL */}
         {children}
       </main>
     </div>
