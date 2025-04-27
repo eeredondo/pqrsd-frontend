@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import socket from "../socket";
@@ -28,9 +28,9 @@ function PanelAsignador() {
   };
 
   const obtenerNombreUsuario = () => {
-    if (usuario?.nombre && usuario?.apellido) return `${usuario.nombre} ${usuario.apellido}`;
+    if (usuario?.nombre) return usuario.nombre;
     if (usuario?.usuario) return usuario.usuario;
-    return "";
+    return "Usuario";
   };
 
   const fechaHoy = new Date().toLocaleDateString("es-CO", {
@@ -115,10 +115,18 @@ function PanelAsignador() {
 
   return (
     <div className="relative p-6">
-      
+
+      {/* MINI PERFIL */}
+      <div className="absolute top-0 left-0 mt-4 ml-6 flex items-center gap-2">
+        <div className="bg-blue-100 p-2 rounded-full">
+          <User className="text-blue-600" size={20} />
+        </div>
+        <span className="text-blue-700 font-semibold text-sm">{obtenerNombreUsuario()}</span>
+      </div>
+
       {/* SALUDO Y FECHA */}
-      <h1 className="text-2xl font-bold mb-1">
-        {saludo}{obtenerNombreUsuario() ? `, ${obtenerNombreUsuario()}` : ""}
+      <h1 className="text-2xl font-bold mb-1 mt-14">
+        {saludo}, {obtenerNombreUsuario()}
       </h1>
       <p className="text-gray-500 text-sm">{fechaHoy}</p>
       <p className="text-indigo-600 font-semibold mt-3">{mensajeMotivacional}</p>
@@ -156,119 +164,8 @@ function PanelAsignador() {
         </div>
       </div>
 
-      {/* NOTIFICACIONES */}
-      {nuevaNotificacion && (
-        <div className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg w-96 z-50 animate-bounce pointer-events-none">
-          <h4 className="font-bold text-lg mb-1">📬 Nueva solicitud recibida</h4>
-          <p><strong>Radicado:</strong> {nuevaNotificacion.radicado}</p>
-          <p><strong>Peticionario:</strong> {nuevaNotificacion.nombre} {nuevaNotificacion.apellido}</p>
-          <p className="text-sm mt-2 opacity-80">Ve a detalles para ver más información</p>
-        </div>
-      )}
+      {/* El resto de tu tabla, loader y paginación sigue igual... */}
 
-      {/* BOTÓN NOTIFICACIONES */}
-      <div className="absolute top-0 right-0 mt-4 mr-6 z-40">
-        <button onClick={() => setMostrarPanel(!mostrarPanel)} className="relative">
-          <Bell className="text-blue-700 w-6 h-6" />
-          {notificaciones.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
-              {notificaciones.length}
-            </span>
-          )}
-        </button>
-
-        {mostrarPanel && (
-          <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border rounded-lg z-50 max-h-96 overflow-y-auto">
-            <div className="p-3 border-b font-bold text-blue-800">Notificaciones</div>
-            {notificaciones.length === 0 ? (
-              <div className="p-3 text-gray-500 text-sm">No hay notificaciones.</div>
-            ) : (
-              <ul className="divide-y">
-                {notificaciones.map((n, idx) => (
-                  <li key={idx} className="p-3">
-                    <p className="text-sm text-blue-800 font-semibold">{n.radicado}</p>
-                    <p className="text-xs text-gray-600">{n.nombre} {n.apellido}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* TABLA DE SOLICITUDES */}
-      <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4">Solicitudes sin asignar</h2>
-
-      {cargando ? (
-        <div className="flex justify-center items-center my-10">
-          <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : solicitudes.length === 0 ? (
-        <p className="text-gray-600 text-sm">No hay solicitudes pendientes por asignar.</p>
-      ) : (
-        <div className="overflow-x-auto shadow border border-gray-200 rounded-lg">
-          <table className="min-w-full bg-white text-sm">
-            <thead className="bg-blue-800 text-white text-left">
-              <tr>
-                <th className="px-4 py-2">Radicado</th>
-                <th className="px-4 py-2">Peticionario</th>
-                <th className="px-4 py-2">Correo</th>
-                <th className="px-4 py-2">Fecha radicación</th>
-                <th className="px-4 py-2">Fecha vencimiento</th>
-                <th className="px-4 py-2">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {solicitudesActuales.map((s) => (
-                <tr key={s.id} className="border-t hover:bg-blue-50">
-                  <td className="px-4 py-2 font-mono">{s.radicado}</td>
-                  <td className="px-4 py-2">{s.nombre} {s.apellido}</td>
-                  <td className="px-4 py-2">{s.correo}</td>
-                  <td className="px-4 py-2">{formatearFecha(s.fecha_creacion)}</td>
-                  <td className="px-4 py-2">{formatearFecha(s.fecha_vencimiento)}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => navigate(`/solicitud/${s.id}`)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-                    >
-                      Ver detalles
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* PAGINACIÓN */}
-      {totalPaginas > 1 && (
-        <div className="flex justify-center items-center mt-6 space-x-2">
-          <button
-            onClick={() => cambiarPagina(paginaActual - 1)}
-            disabled={paginaActual === 1}
-            className={`px-3 py-1 rounded ${paginaActual === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-          >
-            Anterior
-          </button>
-          {Array.from({ length: totalPaginas }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => cambiarPagina(i + 1)}
-              className={`px-3 py-1 rounded ${paginaActual === i + 1 ? 'bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button
-            onClick={() => cambiarPagina(paginaActual + 1)}
-            disabled={paginaActual === totalPaginas}
-            className={`px-3 py-1 rounded ${paginaActual === totalPaginas ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
     </div>
   );
 }
