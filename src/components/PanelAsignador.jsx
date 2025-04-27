@@ -109,12 +109,54 @@ function PanelAsignador() {
 
   return (
     <div className="relative p-6">
+      
+      {/* SALUDO Y FECHA */}
       <h1 className="text-2xl font-bold mb-1">
         {saludo}{usuario?.nombre ? `, ${usuario.nombre}` : ""}
       </h1>
       <p className="text-gray-500 text-sm">{fechaHoy}</p>
       <p className="text-indigo-600 font-semibold mt-3">{mensajeMotivacional}</p>
 
+      {/* TARJETAS DE RESUMEN */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+        <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
+          <div className="bg-blue-100 p-2 rounded-full">
+            📥
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Total PQRSD recibidas</p>
+            <p className="text-xl font-bold text-blue-700">
+              <CountUp end={solicitudes.length} duration={1} />
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
+          <div className="bg-green-100 p-2 rounded-full">
+            ✅
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">PQRSD asignadas</p>
+            <p className="text-xl font-bold text-green-600">
+              <CountUp end={solicitudes.filter(s => s.asignado === true).length} duration={1} />
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
+          <div className="bg-orange-100 p-2 rounded-full">
+            ⏳
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Sin asignar</p>
+            <p className="text-xl font-bold text-orange-500">
+              <CountUp end={solicitudes.filter(s => s.asignado !== true).length} duration={1} />
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* NOTIFICACIONES */}
       {nuevaNotificacion && (
         <div className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg w-96 z-50 animate-bounce pointer-events-none">
           <h4 className="font-bold text-lg mb-1">📬 Nueva solicitud recibida</h4>
@@ -124,6 +166,7 @@ function PanelAsignador() {
         </div>
       )}
 
+      {/* BOTÓN NOTIFICACIONES */}
       <div className="absolute top-0 right-0 mt-4 mr-6 z-40">
         <button onClick={() => setMostrarPanel(!mostrarPanel)} className="relative">
           <Bell className="text-blue-700 w-6 h-6" />
@@ -153,6 +196,7 @@ function PanelAsignador() {
         )}
       </div>
 
+      {/* TABLA DE SOLICITUDES */}
       <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4">Solicitudes sin asignar</h2>
 
       {cargando ? (
@@ -197,7 +241,7 @@ function PanelAsignador() {
         </div>
       )}
 
-      {/* Paginación */}
+      {/* PAGINACIÓN */}
       {totalPaginas > 1 && (
         <div className="flex justify-center items-center mt-6 space-x-2">
           <button
