@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Eye, Inbox, Clock, AlertCircle, CalendarX } from "lucide-react";
+import { Eye, Inbox, AlertCircle, CalendarX } from "lucide-react";
 
 function PanelResponsable() {
   const navigate = useNavigate();
@@ -11,6 +11,19 @@ function PanelResponsable() {
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const token = localStorage.getItem("token");
+
+  const obtenerSaludoConEmoji = () => {
+    const hora = new Date().getHours();
+    if (hora >= 5 && hora < 12) return "☀️ Buenos días";
+    if (hora >= 12 && hora < 18) return "🌇 Buenas tardes";
+    return "🌙 Buenas noches";
+  };
+
+  const obtenerNombreUsuario = () => {
+    if (usuario?.nombre) return usuario.nombre;
+    if (usuario?.usuario) return usuario.usuario;
+    return "Usuario";
+  };
 
   useEffect(() => {
     if (!usuario || usuario.rol !== "responsable") {
@@ -26,11 +39,9 @@ function PanelResponsable() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
         const visibles = res.data.filter((s) =>
           ["Asignado", "En proceso", "Devuelto"].includes(s.estado)
         );
-
         setSolicitudes(visibles);
       } catch (err) {
         console.error("Error al obtener solicitudes asignadas:", err);
@@ -60,8 +71,22 @@ function PanelResponsable() {
     setPaginaActual(nuevaPagina);
   };
 
+  const saludo = obtenerSaludoConEmoji();
+
   return (
     <div className="p-6">
+
+      {/* SALUDO */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {saludo}, {obtenerNombreUsuario()} 👋
+        </h1>
+      </div>
+
+      {/* TÍTULO */}
+      <h2 className="text-xl font-bold text-blue-800 mb-4">📋 Solicitudes Asignadas</h2>
+
+      {/* TARJETAS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-blue-100 p-2 rounded-full">
@@ -98,8 +123,7 @@ function PanelResponsable() {
         </div>
       </div>
 
-      <h2 className="text-xl font-bold text-blue-800 mb-4">📋 Solicitudes Asignadas</h2>
-
+      {/* TABLA */}
       <div className="overflow-x-auto shadow border border-gray-200 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-blue-800 text-white">
@@ -155,7 +179,7 @@ function PanelResponsable() {
         </table>
       </div>
 
-      {/* Paginación */}
+      {/* PAGINACIÓN */}
       {totalPaginas > 1 && (
         <div className="flex justify-center items-center mt-6 space-x-2">
           <button
