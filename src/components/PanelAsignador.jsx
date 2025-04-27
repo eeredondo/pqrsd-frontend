@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Bell, User } from "lucide-react";
+import { Bell } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import socket from "../socket";
@@ -142,7 +142,9 @@ function PanelAsignador() {
 
       {/* SALUDO Y MOTIVACIÓN */}
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">{saludo} 👋</h1>
+        <h1 className="text-2xl font-bold text-gray-800">
+          {saludo}, {usuario?.nombre} 👋
+        </h1>
         <p className="text-indigo-600 font-semibold mt-1">{mensajeMotivacional}</p>
       </div>
 
