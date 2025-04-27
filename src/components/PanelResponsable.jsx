@@ -50,9 +50,15 @@ function PanelResponsable() {
     return "text-green-600";
   };
 
+  const indiceUltimaSolicitud = paginaActual * solicitudesPorPagina;
+  const indicePrimeraSolicitud = indiceUltimaSolicitud - solicitudesPorPagina;
+  const solicitudesActuales = solicitudes.slice(indicePrimeraSolicitud, indiceUltimaSolicitud);
   const totalPaginas = Math.ceil(solicitudes.length / solicitudesPorPagina);
-  const inicio = (paginaActual - 1) * solicitudesPorPagina;
-  const solicitudesPaginadas = solicitudes.slice(inicio, inicio + solicitudesPorPagina);
+
+  const cambiarPagina = (nuevaPagina) => {
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+    setPaginaActual(nuevaPagina);
+  };
 
   return (
     <div className="p-6">
@@ -66,6 +72,7 @@ function PanelResponsable() {
             <p className="text-xl font-bold text-blue-700">{solicitudes.length}</p>
           </div>
         </div>
+
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-red-100 p-2 rounded-full">
             <AlertCircle className="text-red-600" size={24} />
@@ -77,6 +84,7 @@ function PanelResponsable() {
             </p>
           </div>
         </div>
+
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-gray-200 p-2 rounded-full">
             <CalendarX className="text-gray-700" size={24} />
@@ -105,7 +113,7 @@ function PanelResponsable() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {solicitudesPaginadas.map((s) => (
+            {solicitudesActuales.map((s) => (
               <tr key={s.id} className="hover:bg-blue-50">
                 <td className="px-4 py-3 font-mono text-blue-800">{s.radicado}</td>
                 <td className="px-4 py-3">{new Date(s.fecha_creacion).toLocaleDateString("es-CO")}</td>
@@ -148,17 +156,33 @@ function PanelResponsable() {
       </div>
 
       {/* Paginación */}
-      <div className="flex justify-center mt-4 gap-2">
-        {Array.from({ length: totalPaginas }, (_, i) => (
+      {totalPaginas > 1 && (
+        <div className="flex justify-center items-center mt-6 space-x-2">
           <button
-            key={i}
-            onClick={() => setPaginaActual(i + 1)}
-            className={`px-3 py-1 border rounded ${paginaActual === i + 1 ? "bg-blue-600 text-white" : "bg-white text-blue-700"}`}
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 1}
+            className={`px-3 py-1 rounded ${paginaActual === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
           >
-            {i + 1}
+            Anterior
           </button>
-        ))}
-      </div>
+          {Array.from({ length: totalPaginas }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => cambiarPagina(i + 1)}
+              className={`px-3 py-1 rounded ${paginaActual === i + 1 ? 'bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => cambiarPagina(paginaActual + 1)}
+            disabled={paginaActual === totalPaginas}
+            className={`px-3 py-1 rounded ${paginaActual === totalPaginas ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
     </div>
   );
 }
