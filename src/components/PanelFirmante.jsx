@@ -7,9 +7,22 @@ function PanelFirmante() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [paginaActual, setPaginaActual] = useState(1);
   const solicitudesPorPagina = 10;
-
   const token = localStorage.getItem("token");
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
   const navigate = useNavigate();
+
+  const obtenerSaludoConEmoji = () => {
+    const hora = new Date().getHours();
+    if (hora >= 5 && hora < 12) return "☀️ Buenos días";
+    if (hora >= 12 && hora < 18) return "🌇 Buenas tardes";
+    return "🌙 Buenas noches";
+  };
+
+  const obtenerNombreUsuario = () => {
+    if (usuario?.nombre) return usuario.nombre;
+    if (usuario?.usuario) return usuario.usuario;
+    return "Usuario";
+  };
 
   useEffect(() => {
     fetchSolicitudesRevisadas();
@@ -37,11 +50,22 @@ function PanelFirmante() {
     setPaginaActual(nuevaPagina);
   };
 
+  const saludo = obtenerSaludoConEmoji();
+
   return (
     <div className="p-6">
+
+      {/* SALUDO */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          {saludo}, {obtenerNombreUsuario()} 👋
+        </h1>
+      </div>
+
+      {/* TÍTULO */}
       <h2 className="text-2xl font-bold text-blue-800 mb-6">📋 Solicitudes para Firmar</h2>
 
-      {/* Tarjetas resumen */}
+      {/* TARJETAS RESUMEN */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-blue-100 p-2 rounded-full">
@@ -80,7 +104,7 @@ function PanelFirmante() {
         </div>
       </div>
 
-      {/* Tabla */}
+      {/* TABLA */}
       <div className="overflow-x-auto shadow border border-gray-200 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-blue-800 text-white">
@@ -108,8 +132,7 @@ function PanelFirmante() {
                     onClick={() => navigate(`/firmante/solicitud/${s.id}`)}
                     className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition"
                   >
-                    <Eye size={16} />
-                    Ver Detalles
+                    <Eye size={16} /> Ver Detalles
                   </button>
                 </td>
               </tr>
@@ -125,7 +148,7 @@ function PanelFirmante() {
         </table>
       </div>
 
-      {/* Paginación */}
+      {/* PAGINACIÓN */}
       {totalPaginas > 1 && (
         <div className="flex justify-center items-center mt-6 space-x-2">
           <button
