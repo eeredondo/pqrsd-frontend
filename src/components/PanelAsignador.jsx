@@ -1,21 +1,52 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import ResumenCards from "./ResumenCards";
 import { useNavigate } from "react-router-dom";
-import socket from "../socket";
+import { Bell } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Bell } from "lucide-react";
+import socket from "../socket";
+import CountUp from "react-countup";
 
 function PanelAsignador() {
+  const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
-  const [nuevaNotificacion, setNuevaNotificacion] = useState(null);
   const [notificaciones, setNotificaciones] = useState([]);
   const [mostrarPanel, setMostrarPanel] = useState(false);
+  const [nuevaNotificacion, setNuevaNotificacion] = useState(null);
+  const [cargando, setCargando] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
   const solicitudesPorPagina = 10;
+
   const token = localStorage.getItem("token");
-  const navigate = useNavigate();
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  const obtenerSaludoConEmoji = () => {
+    const hora = new Date().getHours();
+    if (hora >= 5 && hora < 12) return "☀️ Buenos días";
+    if (hora >= 12 && hora < 18) return "🌇 Buenas tardes";
+    return "🌙 Buenas noches";
+  };
+
+  const fechaHoy = new Date().toLocaleDateString("es-CO", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+
+  const mensajesMotivacionales = [
+    "✨ ¡Hoy es un gran día para avanzar!",
+    "🚀 ¡Un paso más cerca de tus metas!",
+    "🌟 ¡Cada solicitud cuenta!",
+    "💪 ¡Tú puedes con todo!",
+    "🔥 ¡Eres parte del cambio!"
+  ];
+
+  const mensajeMotivacional = mensajesMotivacionales[
+    Math.floor(Math.random() * mensajesMotivacionales.length)
+  ];
+
+  const saludo = obtenerSaludoConEmoji();
 
   useEffect(() => {
     if (!token) return;
@@ -43,6 +74,7 @@ function PanelAsignador() {
 
   const fetchSolicitudes = async () => {
     try {
+      setCargando(true);
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -50,17 +82,9 @@ function PanelAsignador() {
       setSolicitudes(pendientes);
     } catch (err) {
       console.error("Error al obtener solicitudes:", err);
+    } finally {
+      setCargando(false);
     }
-  };
-
-  const formatearFecha = (fechaISO) => {
-    if (!fechaISO) return "–";
-    const fecha = new Date(fechaISO);
-    return fecha.toLocaleDateString("es-CO", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
   };
 
   const indiceUltimaSolicitud = paginaActual * solicitudesPorPagina;
@@ -73,9 +97,23 @@ function PanelAsignador() {
     setPaginaActual(nuevaPagina);
   };
 
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return "–";
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleDateString("es-CO", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
   return (
-    <div className="relative">
-      <ResumenCards />
+    <div className="relative p-6">
+      <h1 className="text-2xl font-bold mb-1">
+        {saludo}{usuario?.nombre ? `, ${usuario.nombre}` : ""}
+      </h1>
+      <p className="text-gray-500 text-sm">{fechaHoy}</p>
+      <p className="text-indigo-600 font-semibold mt-3">{mensajeMotivacional}</p>
 
       {nuevaNotificacion && (
         <div className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg w-96 z-50 animate-bounce pointer-events-none">
@@ -115,9 +153,13 @@ function PanelAsignador() {
         )}
       </div>
 
-      <h2 className="text-xl font-bold text-gray-800 mb-4 mt-10">Solicitudes sin asignar</h2>
+      <h2 className="text-xl font-bold text-gray-800 mt-8 mb-4">Solicitudes sin asignar</h2>
 
-      {solicitudes.length === 0 ? (
+      {cargando ? (
+        <div className="flex justify-center items-center my-10">
+          <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : solicitudes.length === 0 ? (
         <p className="text-gray-600 text-sm">No hay solicitudes pendientes por asignar.</p>
       ) : (
         <div className="overflow-x-auto shadow border border-gray-200 rounded-lg">
@@ -155,7 +197,7 @@ function PanelAsignador() {
         </div>
       )}
 
-      {/* Botones de paginación */}
+      {/* Paginación */}
       {totalPaginas > 1 && (
         <div className="flex justify-center items-center mt-6 space-x-2">
           <button
@@ -165,13 +207,13 @@ function PanelAsignador() {
           >
             Anterior
           </button>
-          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
+          {Array.from({ length: totalPaginas }, (_, i) => (
             <button
-              key={num}
-              onClick={() => cambiarPagina(num)}
-              className={`px-3 py-1 rounded ${paginaActual === num ? 'bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+              key={i}
+              onClick={() => cambiarPagina(i + 1)}
+              className={`px-3 py-1 rounded ${paginaActual === i + 1 ? 'bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
             >
-              {num}
+              {i + 1}
             </button>
           ))}
           <button
