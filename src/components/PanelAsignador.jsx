@@ -27,6 +27,12 @@ function PanelAsignador() {
     return "🌙 Buenas noches";
   };
 
+  const obtenerNombreUsuario = () => {
+    if (usuario?.nombre && usuario?.apellido) return `${usuario.nombre} ${usuario.apellido}`;
+    if (usuario?.usuario) return usuario.usuario;
+    return "";
+  };
+
   const fechaHoy = new Date().toLocaleDateString("es-CO", {
     weekday: "long",
     year: "numeric",
@@ -112,7 +118,7 @@ function PanelAsignador() {
       
       {/* SALUDO Y FECHA */}
       <h1 className="text-2xl font-bold mb-1">
-        {saludo}{usuario?.nombre ? `, ${usuario.nombre}` : ""}
+        {saludo}{obtenerNombreUsuario() ? `, ${obtenerNombreUsuario()}` : ""}
       </h1>
       <p className="text-gray-500 text-sm">{fechaHoy}</p>
       <p className="text-indigo-600 font-semibold mt-3">{mensajeMotivacional}</p>
@@ -120,9 +126,7 @@ function PanelAsignador() {
       {/* TARJETAS DE RESUMEN */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
-          <div className="bg-blue-100 p-2 rounded-full">
-            📥
-          </div>
+          <div className="bg-blue-100 p-2 rounded-full">📥</div>
           <div>
             <p className="text-sm text-gray-500">Total PQRSD recibidas</p>
             <p className="text-xl font-bold text-blue-700">
@@ -132,9 +136,7 @@ function PanelAsignador() {
         </div>
 
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
-          <div className="bg-green-100 p-2 rounded-full">
-            ✅
-          </div>
+          <div className="bg-green-100 p-2 rounded-full">✅</div>
           <div>
             <p className="text-sm text-gray-500">PQRSD asignadas</p>
             <p className="text-xl font-bold text-green-600">
@@ -144,9 +146,7 @@ function PanelAsignador() {
         </div>
 
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
-          <div className="bg-orange-100 p-2 rounded-full">
-            ⏳
-          </div>
+          <div className="bg-orange-100 p-2 rounded-full">⏳</div>
           <div>
             <p className="text-sm text-gray-500">Sin asignar</p>
             <p className="text-xl font-bold text-orange-500">
