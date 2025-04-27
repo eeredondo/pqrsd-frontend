@@ -49,7 +49,7 @@ function DashboardLayout({ children }) {
 
   navItems.push({ to: "/consultor", label: "Consultor PQRSD", icon: <FileSearch size={18} /> });
 
-  // Función para formatear la fecha
+  // Fecha formateada
   const fechaHoy = new Date().toLocaleDateString("es-CO", {
     weekday: "long",
     year: "numeric",
@@ -96,15 +96,15 @@ function DashboardLayout({ children }) {
 
       {/* Contenido */}
       <main className="flex-1 p-6 bg-gray-50">
-        {/* CABECERA DE BIENVENIDA MEJORADA */}
+        {/* Nueva cabecera */}
         <div className="bg-white p-4 rounded shadow mb-6 border border-gray-200">
-          <h1 className="text-xl font-bold text-blue-800">Bienvenido, {usuario?.nombre}</h1>
+          <h1 className="text-2xl font-bold text-blue-800">HORIZON PQRSD</h1>
           <p className="text-gray-500 text-sm mt-1">
             Rol: <span className="capitalize">{usuario?.rol}</span> | Fecha: {fechaHoy}
           </p>
         </div>
 
-        {/* CONTENIDO PRINCIPAL */}
+        {/* Contenido principal */}
         {children}
       </main>
     </div>
