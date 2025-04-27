@@ -33,9 +33,15 @@ function PanelRevisor() {
     }
   };
 
+  const indiceUltimaSolicitud = paginaActual * solicitudesPorPagina;
+  const indicePrimeraSolicitud = indiceUltimaSolicitud - solicitudesPorPagina;
+  const solicitudesActuales = solicitudes.slice(indicePrimeraSolicitud, indiceUltimaSolicitud);
   const totalPaginas = Math.ceil(solicitudes.length / solicitudesPorPagina);
-  const inicio = (paginaActual - 1) * solicitudesPorPagina;
-  const solicitudesPaginadas = solicitudes.slice(inicio, inicio + solicitudesPorPagina);
+
+  const cambiarPagina = (nuevaPagina) => {
+    if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+    setPaginaActual(nuevaPagina);
+  };
 
   return (
     <div className="p-6">
@@ -98,7 +104,7 @@ function PanelRevisor() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {solicitudesPaginadas.map((s) => (
+            {solicitudesActuales.map((s) => (
               <tr key={s.id} className="hover:bg-blue-50 transition">
                 <td className="px-4 py-3 font-mono text-blue-800">{s.radicado}</td>
                 <td className="px-4 py-3">
@@ -133,20 +139,30 @@ function PanelRevisor() {
 
       {/* Paginación */}
       {totalPaginas > 1 && (
-        <div className="flex justify-center mt-4 gap-2">
+        <div className="flex justify-center items-center mt-6 space-x-2">
+          <button
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 1}
+            className={`px-3 py-1 rounded ${paginaActual === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+          >
+            Anterior
+          </button>
           {Array.from({ length: totalPaginas }, (_, i) => (
             <button
               key={i}
-              onClick={() => setPaginaActual(i + 1)}
-              className={`px-3 py-1 rounded ${
-                paginaActual === i + 1
-                  ? "bg-blue-700 text-white"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-              }`}
+              onClick={() => cambiarPagina(i + 1)}
+              className={`px-3 py-1 rounded ${paginaActual === i + 1 ? 'bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
             >
               {i + 1}
             </button>
           ))}
+          <button
+            onClick={() => cambiarPagina(paginaActual + 1)}
+            disabled={paginaActual === totalPaginas}
+            className={`px-3 py-1 rounded ${paginaActual === totalPaginas ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+          >
+            Siguiente
+          </button>
         </div>
       )}
     </div>
