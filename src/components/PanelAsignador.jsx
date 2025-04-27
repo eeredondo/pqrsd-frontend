@@ -27,6 +27,12 @@ function PanelAsignador() {
     return "🌙 Buenas noches";
   };
 
+  const obtenerNombreUsuario = () => {
+    if (usuario?.nombre) return usuario.nombre;
+    if (usuario?.usuario) return usuario.usuario;
+    return "Usuario";
+  };
+
   const fechaHoy = new Date().toLocaleDateString("es-CO", {
     weekday: "long",
     year: "numeric",
@@ -143,7 +149,7 @@ function PanelAsignador() {
       {/* SALUDO Y MOTIVACIÓN */}
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-gray-800">
-          {saludo}, {usuario?.nombre} 👋
+          {saludo}, {obtenerNombreUsuario()} 👋
         </h1>
         <p className="text-indigo-600 font-semibold mt-1">{mensajeMotivacional}</p>
       </div>
