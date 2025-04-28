@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "react-toastify"; // 👈 Importar toast
+import "react-toastify/dist/ReactToastify.css"; // 👈 Importar estilos si no lo tienes en el index.js
 
 function DetalleSolicitud() {
   const { id } = useParams();
@@ -11,6 +13,7 @@ function DetalleSolicitud() {
   const [responsableSeleccionado, setResponsableSeleccionado] = useState("");
   const [diasSeleccionados, setDiasSeleccionados] = useState("");
   const [fechaVencimientoVisual, setFechaVencimientoVisual] = useState("");
+  const [cargandoAsignar, setCargandoAsignar] = useState(false); // 👈 loader botón
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +46,7 @@ function DetalleSolicitud() {
 
   const calcularFechaVencimiento = (dias) => {
     let fecha = new Date();
-    fecha.setDate(fecha.getDate() + 1); // comenzar desde mañana
+    fecha.setDate(fecha.getDate() + 1);
     let count = 0;
 
     const feriados = [
@@ -77,10 +80,14 @@ function DetalleSolicitud() {
 
   const asignar = async () => {
     if (!responsableSeleccionado || !diasSeleccionados) {
-      return alert("Selecciona un responsable y un plazo en días hábiles");
+      toast.warn("⚠️ Debes seleccionar un responsable y un plazo.", {
+        position: "top-right",
+      });
+      return;
     }
 
     try {
+      setCargandoAsignar(true); // 👈 inicia loader
       const formData = new FormData();
       formData.append("termino_dias", diasSeleccionados);
 
@@ -93,11 +100,22 @@ function DetalleSolicitud() {
           },
         }
       );
-      alert("✅ Solicitud asignada correctamente");
-      navigate("/asignador");
+
+      toast.success("✅ Solicitud asignada correctamente", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        navigate("/asignador");
+      }, 2000);
     } catch (error) {
       console.error("Error al asignar:", error);
-      alert("❌ Error al asignar solicitud");
+      toast.error("❌ Error al asignar solicitud", {
+        position: "top-right",
+      });
+    } finally {
+      setCargandoAsignar(false); // 👈 termina loader
     }
   };
 
@@ -191,9 +209,14 @@ function DetalleSolicitud() {
 
         <button
           onClick={asignar}
-          className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm"
+          disabled={cargandoAsignar}
+          className={`px-4 py-2 rounded text-sm w-full ${
+            cargandoAsignar
+              ? "bg-blue-400 cursor-wait"
+              : "bg-blue-700 hover:bg-blue-800"
+          } text-white transition`}
         >
-          Asignar solicitud
+          {cargandoAsignar ? "Asignando..." : "Asignar solicitud"}
         </button>
       </div>
     </div>
