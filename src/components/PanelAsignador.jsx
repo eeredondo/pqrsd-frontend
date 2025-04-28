@@ -13,7 +13,6 @@ function PanelAsignador() {
   const [todasSolicitudes, setTodasSolicitudes] = useState([]);
   const [notificaciones, setNotificaciones] = useState([]);
   const [mostrarPanel, setMostrarPanel] = useState(false);
-  const [nuevaNotificacion, setNuevaNotificacion] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
   const solicitudesPorPagina = 10;
@@ -33,13 +32,6 @@ function PanelAsignador() {
     if (usuario?.usuario) return usuario.usuario;
     return "Usuario";
   };
-
-  const fechaHoy = new Date().toLocaleDateString("es-CO", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
 
   const mensajesMotivacionales = [
     "✨ ¡Hoy es un gran día para avanzar!",
@@ -67,10 +59,9 @@ function PanelAsignador() {
 
     socket.on("nueva_solicitud", (data) => {
       toast.info(`📬 Nueva solicitud: ${data.radicado}`);
-      setNuevaNotificacion(data);
       setNotificaciones((prev) => [data, ...prev]);
       fetchSolicitudes();
-      setTimeout(() => setNuevaNotificacion(null), 8000);
+      setTimeout(() => setNotificaciones([]), 8000);
     });
 
     return () => {
@@ -176,7 +167,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">PQRSD asignadas</p>
             <p className="text-xl font-bold text-green-600">
-              <CountUp end={todasSolicitudes.filter(s => s.asignado_a !== null).length} duration={1} />
+              <CountUp end={todasSolicitudes.filter(s => s.asignado_a).length} duration={1} />
             </p>
           </div>
         </div>
@@ -186,7 +177,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">Sin asignar</p>
             <p className="text-xl font-bold text-orange-500">
-              <CountUp end={todasSolicitudes.filter(s => s.asignado_a === null).length} duration={1} />
+              <CountUp end={todasSolicitudes.filter(s => !s.asignado_a).length} duration={1} />
             </p>
           </div>
         </div>
