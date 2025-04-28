@@ -125,6 +125,7 @@ function PanelFinalizador() {
               <th className="px-4 py-3 font-medium">Radicado</th>
               <th className="px-4 py-3 font-medium">Fecha</th>
               <th className="px-4 py-3 font-medium">Peticionario</th>
+              <th className="px-4 py-3 font-medium">Tipo de PQRSD</th> {/* 👈 Nueva columna */}
               <th className="px-4 py-3 font-medium">Vence en</th>
               <th className="px-4 py-3 font-medium text-center">Acción</th>
             </tr>
@@ -141,6 +142,7 @@ function PanelFinalizador() {
                   })}
                 </td>
                 <td className="px-4 py-3">{s.nombre} {s.apellido}</td>
+                <td className="px-4 py-3">{s.tipo_pqrsd || "No definido"}</td> {/* 👈 Nueva celda */}
                 <td className="px-4 py-3 text-gray-700 flex items-center gap-1">
                   <AlarmClock size={16} className="text-gray-500" />
                   {calcularDias(s.fecha_vencimiento)}
@@ -159,7 +161,7 @@ function PanelFinalizador() {
             ))}
             {solicitudes.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center p-4 text-gray-500 italic">
+                <td colSpan="6" className="text-center p-4 text-gray-500 italic">
                   No hay solicitudes firmadas para finalizar.
                 </td>
               </tr>
