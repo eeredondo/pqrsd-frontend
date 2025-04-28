@@ -112,6 +112,7 @@ function PanelFirmante() {
               <th className="px-4 py-3 font-medium">Radicado</th>
               <th className="px-4 py-3 font-medium">Fecha</th>
               <th className="px-4 py-3 font-medium">Peticionario</th>
+              <th className="px-4 py-3 font-medium">Tipo de PQRSD</th> {/* 👈 Nueva columna */}
               <th className="px-4 py-3 font-medium text-center">Acción</th>
             </tr>
           </thead>
@@ -127,6 +128,7 @@ function PanelFirmante() {
                   })}
                 </td>
                 <td className="px-4 py-3">{s.nombre} {s.apellido}</td>
+                <td className="px-4 py-3">{s.tipo_pqrsd || "No definido"}</td> {/* 👈 Nueva celda */}
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => navigate(`/firmante/solicitud/${s.id}`)}
@@ -139,7 +141,7 @@ function PanelFirmante() {
             ))}
             {solicitudes.length === 0 && (
               <tr>
-                <td colSpan="4" className="text-center p-4 text-gray-500 italic">
+                <td colSpan="5" className="text-center p-4 text-gray-500 italic">
                   No hay solicitudes para firmar.
                 </td>
               </tr>
