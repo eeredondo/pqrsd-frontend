@@ -120,6 +120,7 @@ function PanelRevisor() {
               <th className="px-4 py-3 font-medium text-left">Radicado</th>
               <th className="px-4 py-3 font-medium text-left">Fecha</th>
               <th className="px-4 py-3 font-medium text-left">Peticionario</th>
+              <th className="px-4 py-3 font-medium text-left">Tipo de PQRSD</th> {/* 👈 Nueva columna */}
               <th className="px-4 py-3 font-medium text-left">Estado</th>
               <th className="px-4 py-3 font-medium text-center">Acción</th>
             </tr>
@@ -136,6 +137,7 @@ function PanelRevisor() {
                   })}
                 </td>
                 <td className="px-4 py-3">{s.nombre} {s.apellido}</td>
+                <td className="px-4 py-3">{s.tipo_pqrsd || "No definido"}</td> {/* 👈 Nueva celda */}
                 <td className="px-4 py-3 text-gray-700">{s.estado}</td>
                 <td className="px-4 py-3 text-center">
                   <button
@@ -149,7 +151,7 @@ function PanelRevisor() {
             ))}
             {solicitudes.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center p-4 text-gray-500 italic">
+                <td colSpan="6" className="text-center p-4 text-gray-500 italic">
                   No hay solicitudes en revisión actualmente.
                 </td>
               </tr>
