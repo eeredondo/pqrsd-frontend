@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react"; // 👈 usamos Loader2 y CheckCircle2
+import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -14,7 +14,7 @@ function DetalleSolicitud() {
   const [diasSeleccionados, setDiasSeleccionados] = useState("");
   const [fechaVencimientoVisual, setFechaVencimientoVisual] = useState("");
   const [cargandoAsignar, setCargandoAsignar] = useState(false);
-  const [asignacionExitosa, setAsignacionExitosa] = useState(false); // 👈 NUEVO
+  const [asignacionExitosa, setAsignacionExitosa] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -102,14 +102,9 @@ function DetalleSolicitud() {
         }
       );
 
-      toast.success(`✅ PQRSD asignada correctamente.`, {
-        position: "top-right",
-        autoClose: 1500,
-      });
-
       setTimeout(() => {
-        setAsignacionExitosa(true); // 👈 cambia el estado
-      }, 1500);
+        setAsignacionExitosa(true); // Solo cambiamos estado
+      }, 300);
     } catch (error) {
       console.error("Error al asignar:", error);
       toast.error("❌ Error al asignar solicitud", {
@@ -120,13 +115,27 @@ function DetalleSolicitud() {
     }
   };
 
+  // 👇 Aquí mostramos el toast cuando asignación es exitosa
+  useEffect(() => {
+    if (asignacionExitosa && solicitud) {
+      toast.success(`✅ La PQRSD ${solicitud.radicado} fue asignada correctamente.`, {
+        position: "top-right",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        navigate("/asignador");
+      }, 3000);
+    }
+  }, [asignacionExitosa, solicitud, navigate]);
+
   if (!solicitud) return <p className="text-gray-600">Cargando solicitud...</p>;
 
   const fechaRadicacion = solicitud.fecha_creacion && !isNaN(Date.parse(solicitud.fecha_creacion))
     ? new Date(solicitud.fecha_creacion)
     : null;
 
-  // 👇 Si la asignación fue exitosa, mostrar confirmación bonita
+  // 👇 Vista de confirmación si ya fue asignado
   if (asignacionExitosa) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-gray-50 px-4">
@@ -136,9 +145,6 @@ function DetalleSolicitud() {
           El radicado <span className="font-semibold">{solicitud.radicado}</span> fue asignado exitosamente.
         </p>
         <p className="text-sm text-gray-500">Redirigiendo al panel de asignación...</p>
-
-        {/* Redirige automáticamente */}
-        {setTimeout(() => navigate("/asignador"), 3000)}
       </div>
     );
   }
