@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
-  UserPlus,
-  Trash2,
-  ShieldCheck,
-  Loader,
-  Users,
-  Edit2,
-  Save,
-  Search,
-  PlusCircle,
-  KeyRound,
-  CheckCircle,
-  XCircle
+  UserPlus, Trash2, ShieldCheck, Loader, Users,
+  Edit2, Save, Search, PlusCircle, KeyRound,
+  CheckCircle, XCircle
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -28,13 +19,13 @@ function PanelAdmin() {
   });
   const [loading, setLoading] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(null);
+  const [usuarioEditando, setUsuarioEditando] = useState({});
   const [busqueda, setBusqueda] = useState("");
   const [mostrarModal, setMostrarModal] = useState(false);
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const token = localStorage.getItem("token");
 
   const rolesDisponibles = ["asignador", "responsable", "revisor", "firmante", "admin"];
-
   const rolColor = {
     asignador: "bg-blue-100 text-blue-700",
     responsable: "bg-green-100 text-green-700",
@@ -81,27 +72,43 @@ function PanelAdmin() {
     }
   };
 
-  const guardarEdicion = async (usuarioEditado) => {
+  const activarModoEdicion = (usuario) => {
+    setModoEdicion(usuario.id);
+    setUsuarioEditando({
+      ...usuario,
+      contraseña: "",
+    });
+  };
+
+  const guardarEdicion = async () => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioEditado.id}`, usuarioEditado, {
+      const payload = {
+        nombre: usuarioEditando.nombre,
+        correo: usuarioEditando.correo,
+        rol: usuarioEditando.rol,
+      };
+      if (usuarioEditando.contraseña) {
+        payload.contraseña = usuarioEditando.contraseña;
+      }
+
+      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${modoEdicion}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("✅ Usuario actualizado");
       setModoEdicion(null);
+      setUsuarioEditando({});
       obtenerUsuarios();
     } catch (err) {
       console.error("Error al actualizar usuario:", err);
       toast.error("❌ No se pudo actualizar el usuario");
     }
   };
-
   const resetearContraseña = async (id) => {
     const nuevaContraseña = prompt("🔒 Nueva contraseña para este usuario:");
     if (!nuevaContraseña) {
       toast.warn("⚠️ No se cambió la contraseña.");
       return;
     }
-
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${id}/reset-password`, {
         nueva_contraseña: nuevaContraseña,
@@ -148,7 +155,7 @@ function PanelAdmin() {
         <ShieldCheck size={24} /> Panel de Administración
       </h2>
 
-      {/* Botón para abrir modal */}
+      {/* Botón y filtro */}
       <div className="flex justify-between mb-6 flex-wrap gap-4">
         <button
           onClick={() => setMostrarModal(true)}
@@ -157,7 +164,6 @@ function PanelAdmin() {
           <PlusCircle size={18} /> Crear Nuevo Usuario
         </button>
 
-        {/* Filtro estado */}
         <select
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
@@ -169,7 +175,7 @@ function PanelAdmin() {
         </select>
       </div>
 
-      {/* Barra de búsqueda */}
+      {/* Búsqueda */}
       <div className="mb-6 flex items-center gap-2">
         <Search className="text-gray-600" />
         <input
@@ -181,7 +187,7 @@ function PanelAdmin() {
         />
       </div>
 
-      {/* Tabla de usuarios */}
+      {/* Tabla */}
       <div className="bg-white border p-6 rounded shadow">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <Users size={20} /> Usuarios registrados
@@ -195,66 +201,90 @@ function PanelAdmin() {
                 <th className="px-4 py-3 text-left">Correo</th>
                 <th className="px-4 py-3 text-left">Rol</th>
                 <th className="px-4 py-3 text-left">Estado</th>
-                <th className="px-4 py-3 text-center">Acción</th>
+                <th className="px-4 py-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {usuariosFiltrados.map((u) => (
                 <tr key={u.id} className="hover:bg-blue-50">
                   <td className="px-4 py-3">{u.usuario}</td>
-                  <td className="px-4 py-3 flex items-center gap-1">
-                    {u.activo ? (
-                      <CheckCircle size={16} className="text-green-600" />
-                    ) : (
-                      <XCircle size={16} className="text-red-600" />
-                    )}
+
+                  {/* Nombre */}
+                  <td className="px-4 py-3">
                     {modoEdicion === u.id ? (
                       <input
-                        value={u.nombre}
-                        onChange={(e) =>
-                          setUsuarios(usuarios.map((x) => x.id === u.id ? { ...x, nombre: e.target.value } : x))
-                        }
+                        value={usuarioEditando.nombre}
+                        onChange={(e) => setUsuarioEditando({...usuarioEditando, nombre: e.target.value})}
                         className="border rounded p-1 w-full"
                       />
                     ) : (
                       u.nombre
                     )}
                   </td>
+
+                  {/* Correo */}
                   <td className="px-4 py-3">
                     {modoEdicion === u.id ? (
                       <input
-                        value={u.correo}
-                        onChange={(e) =>
-                          setUsuarios(usuarios.map((x) => x.id === u.id ? { ...x, correo: e.target.value } : x))
-                        }
+                        value={usuarioEditando.correo}
+                        onChange={(e) => setUsuarioEditando({...usuarioEditando, correo: e.target.value})}
                         className="border rounded p-1 w-full"
                       />
                     ) : (
                       u.correo
                     )}
                   </td>
+
+                  {/* Rol */}
                   <td className="px-4 py-3 capitalize">
-                    <span className={`px-2 py-1 rounded-full text-xs ${rolColor[u.rol]}`}>
-                      {u.rol}
-                    </span>
+                    {modoEdicion === u.id ? (
+                      <select
+                        value={usuarioEditando.rol}
+                        onChange={(e) => setUsuarioEditando({...usuarioEditando, rol: e.target.value})}
+                        className="border rounded p-1 w-full"
+                      >
+                        {rolesDisponibles.map((rol) => (
+                          <option key={rol} value={rol}>
+                            {rol.charAt(0).toUpperCase() + rol.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className={`px-2 py-1 rounded-full text-xs ${rolColor[u.rol]}`}>
+                        {u.rol}
+                      </span>
+                    )}
                   </td>
+
+                  {/* Estado */}
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs ${u.activo ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                       {u.activo ? "Activo" : "Inactivo"}
                     </span>
                   </td>
+
+                  {/* Acciones */}
                   <td className="px-4 py-3 text-center flex gap-2 flex-wrap justify-center">
                     {modoEdicion === u.id ? (
-                      <button
-                        onClick={() => guardarEdicion(u)}
-                        className="text-green-600 hover:text-green-800 flex items-center gap-1"
-                      >
-                        <Save size={16} /> Guardar
-                      </button>
+                      <>
+                        <input
+                          type="password"
+                          placeholder="Nueva contraseña (opcional)"
+                          value={usuarioEditando.contraseña}
+                          onChange={(e) => setUsuarioEditando({...usuarioEditando, contraseña: e.target.value})}
+                          className="border rounded p-1 w-full"
+                        />
+                        <button
+                          onClick={guardarEdicion}
+                          className="text-green-600 hover:text-green-800 flex items-center gap-1"
+                        >
+                          <Save size={16} /> Guardar
+                        </button>
+                      </>
                     ) : (
                       <>
                         <button
-                          onClick={() => setModoEdicion(u.id)}
+                          onClick={() => activarModoEdicion(u)}
                           className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
                         >
                           <Edit2 size={16} /> Editar
@@ -289,7 +319,7 @@ function PanelAdmin() {
         </div>
       </div>
 
-      {/* Modal para crear usuario */}
+      {/* Modal Crear Usuario */}
       {mostrarModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
