@@ -10,6 +10,7 @@ import CountUp from "react-countup";
 function PanelAsignador() {
   const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
+  const [todasSolicitudes, setTodasSolicitudes] = useState([]);
   const [notificaciones, setNotificaciones] = useState([]);
   const [mostrarPanel, setMostrarPanel] = useState(false);
   const [nuevaNotificacion, setNuevaNotificacion] = useState(null);
@@ -84,7 +85,8 @@ function PanelAsignador() {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const pendientes = res.data.filter((s) => s.estado === "Pendiente");
+      setTodasSolicitudes(res.data); // Todas
+      const pendientes = res.data.filter((s) => s.estado === "Pendiente"); // Solo pendientes
       setSolicitudes(pendientes);
     } catch (err) {
       console.error("Error al obtener solicitudes:", err);
@@ -164,7 +166,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">Total PQRSD recibidas</p>
             <p className="text-xl font-bold text-blue-700">
-              <CountUp end={solicitudes.length} duration={1} />
+              <CountUp end={todasSolicitudes.length} duration={1} />
             </p>
           </div>
         </div>
@@ -174,7 +176,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">PQRSD asignadas</p>
             <p className="text-xl font-bold text-green-600">
-              <CountUp end={solicitudes.filter(s => s.asignado === true).length} duration={1} />
+              <CountUp end={todasSolicitudes.filter(s => s.asignado === true).length} duration={1} />
             </p>
           </div>
         </div>
@@ -184,7 +186,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">Sin asignar</p>
             <p className="text-xl font-bold text-orange-500">
-              <CountUp end={solicitudes.filter(s => s.asignado !== true).length} duration={1} />
+              <CountUp end={todasSolicitudes.filter(s => s.asignado !== true).length} duration={1} />
             </p>
           </div>
         </div>
