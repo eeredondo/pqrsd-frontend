@@ -9,7 +9,10 @@ import {
   Edit2,
   Save,
   Search,
-  PlusCircle
+  PlusCircle,
+  KeyRound,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,7 +29,8 @@ function PanelAdmin() {
   const [loading, setLoading] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(null);
   const [busqueda, setBusqueda] = useState("");
-  const [mostrarModal, setMostrarModal] = useState(false); // 👈 Modal de creación
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState("todos");
   const token = localStorage.getItem("token");
 
   const rolesDisponibles = ["asignador", "responsable", "revisor", "firmante", "admin"];
@@ -77,21 +81,6 @@ function PanelAdmin() {
     }
   };
 
-  const eliminarUsuario = async (id) => {
-    if (!window.confirm("¿Estás seguro de eliminar este usuario?")) return;
-
-    try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/usuarios/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("✅ Usuario eliminado");
-      obtenerUsuarios();
-    } catch (err) {
-      console.error("Error al eliminar usuario:", err);
-      toast.error("❌ No se pudo eliminar el usuario");
-    }
-  };
-
   const guardarEdicion = async (usuarioEditado) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioEditado.id}`, usuarioEditado, {
@@ -106,11 +95,52 @@ function PanelAdmin() {
     }
   };
 
-  const usuariosFiltrados = usuarios.filter(u =>
-    u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-    u.usuario.toLowerCase().includes(busqueda.toLowerCase()) ||
-    u.correo.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const resetearContraseña = async (id) => {
+    const nuevaContraseña = prompt("🔒 Nueva contraseña para este usuario:");
+    if (!nuevaContraseña) {
+      toast.warn("⚠️ No se cambió la contraseña.");
+      return;
+    }
+
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${id}/reset-password`, {
+        nueva_contraseña: nuevaContraseña,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("✅ Contraseña actualizada");
+    } catch (err) {
+      console.error("Error al resetear contraseña:", err);
+      toast.error("❌ No se pudo resetear la contraseña");
+    }
+  };
+
+  const cambiarEstadoUsuario = async (id, activo) => {
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${id}/cambiar-estado`, {
+        activo: !activo,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(`✅ Usuario ${!activo ? "activado" : "desactivado"}`);
+      obtenerUsuarios();
+    } catch (err) {
+      console.error("Error al cambiar estado:", err);
+      toast.error("❌ No se pudo cambiar el estado del usuario");
+    }
+  };
+
+  const usuariosFiltrados = usuarios
+    .filter(u =>
+      u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      u.usuario.toLowerCase().includes(busqueda.toLowerCase()) ||
+      u.correo.toLowerCase().includes(busqueda.toLowerCase())
+    )
+    .filter(u => {
+      if (filtroEstado === "activos") return u.activo;
+      if (filtroEstado === "inactivos") return !u.activo;
+      return true;
+    });
 
   return (
     <div className="p-6">
@@ -119,13 +149,24 @@ function PanelAdmin() {
       </h2>
 
       {/* Botón para abrir modal */}
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-between mb-6 flex-wrap gap-4">
         <button
           onClick={() => setMostrarModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2"
         >
           <PlusCircle size={18} /> Crear Nuevo Usuario
         </button>
+
+        {/* Filtro estado */}
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+          className="border rounded p-2 text-sm"
+        >
+          <option value="todos">Todos</option>
+          <option value="activos">Activos</option>
+          <option value="inactivos">Inactivos</option>
+        </select>
       </div>
 
       {/* Barra de búsqueda */}
@@ -153,6 +194,7 @@ function PanelAdmin() {
                 <th className="px-4 py-3 text-left">Nombre</th>
                 <th className="px-4 py-3 text-left">Correo</th>
                 <th className="px-4 py-3 text-left">Rol</th>
+                <th className="px-4 py-3 text-left">Estado</th>
                 <th className="px-4 py-3 text-center">Acción</th>
               </tr>
             </thead>
@@ -160,7 +202,12 @@ function PanelAdmin() {
               {usuariosFiltrados.map((u) => (
                 <tr key={u.id} className="hover:bg-blue-50">
                   <td className="px-4 py-3">{u.usuario}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 flex items-center gap-1">
+                    {u.activo ? (
+                      <CheckCircle size={16} className="text-green-600" />
+                    ) : (
+                      <XCircle size={16} className="text-red-600" />
+                    )}
                     {modoEdicion === u.id ? (
                       <input
                         value={u.nombre}
@@ -191,7 +238,12 @@ function PanelAdmin() {
                       {u.rol}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center flex gap-2 justify-center">
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs ${u.activo ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      {u.activo ? "Activo" : "Inactivo"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center flex gap-2 flex-wrap justify-center">
                     {modoEdicion === u.id ? (
                       <button
                         onClick={() => guardarEdicion(u)}
@@ -208,10 +260,17 @@ function PanelAdmin() {
                           <Edit2 size={16} /> Editar
                         </button>
                         <button
-                          onClick={() => eliminarUsuario(u.id)}
-                          className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                          onClick={() => resetearContraseña(u.id)}
+                          className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
                         >
-                          <Trash2 size={16} /> Eliminar
+                          <KeyRound size={16} /> Resetear
+                        </button>
+                        <button
+                          onClick={() => cambiarEstadoUsuario(u.id, u.activo)}
+                          className={`${u.activo ? "text-red-600 hover:text-red-800" : "text-green-600 hover:text-green-800"} flex items-center gap-1`}
+                        >
+                          {u.activo ? <XCircle size={16} /> : <CheckCircle size={16} />}
+                          {u.activo ? "Desactivar" : "Activar"}
                         </button>
                       </>
                     )}
@@ -220,7 +279,7 @@ function PanelAdmin() {
               ))}
               {usuariosFiltrados.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="text-center text-gray-500 py-4 italic">
+                  <td colSpan="6" className="text-center text-gray-500 py-4 italic">
                     No hay usuarios registrados.
                   </td>
                 </tr>
@@ -230,7 +289,7 @@ function PanelAdmin() {
         </div>
       </div>
 
-      {/* Modal de creación de usuario */}
+      {/* Modal para crear usuario */}
       {mostrarModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
