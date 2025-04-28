@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "react-toastify"; // 👈 Importar toast
-import "react-toastify/dist/ReactToastify.css"; // 👈 Importar estilos si no lo tienes en el index.js
+import { ArrowLeft, Loader2 } from "lucide-react"; // 👈 Importamos spinner Loader2
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function DetalleSolicitud() {
   const { id } = useParams();
@@ -13,7 +13,7 @@ function DetalleSolicitud() {
   const [responsableSeleccionado, setResponsableSeleccionado] = useState("");
   const [diasSeleccionados, setDiasSeleccionados] = useState("");
   const [fechaVencimientoVisual, setFechaVencimientoVisual] = useState("");
-  const [cargandoAsignar, setCargandoAsignar] = useState(false); // 👈 loader botón
+  const [cargandoAsignar, setCargandoAsignar] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,7 +87,7 @@ function DetalleSolicitud() {
     }
 
     try {
-      setCargandoAsignar(true); // 👈 inicia loader
+      setCargandoAsignar(true);
       const formData = new FormData();
       formData.append("termino_dias", diasSeleccionados);
 
@@ -101,21 +101,21 @@ function DetalleSolicitud() {
         }
       );
 
-      toast.success("✅ Solicitud asignada correctamente", {
+      toast.success(`✅ Radicado ${solicitud.radicado} asignado correctamente.`, {
         position: "top-right",
         autoClose: 2000,
       });
 
       setTimeout(() => {
         navigate("/asignador");
-      }, 2000);
+      }, 2200); // Espera 2.2 segundos para animar bien la transición
     } catch (error) {
       console.error("Error al asignar:", error);
       toast.error("❌ Error al asignar solicitud", {
         position: "top-right",
       });
     } finally {
-      setCargandoAsignar(false); // 👈 termina loader
+      setCargandoAsignar(false);
     }
   };
 
@@ -210,13 +210,19 @@ function DetalleSolicitud() {
         <button
           onClick={asignar}
           disabled={cargandoAsignar}
-          className={`px-4 py-2 rounded text-sm w-full ${
+          className={`px-4 py-2 rounded text-sm w-full flex justify-center items-center ${
             cargandoAsignar
               ? "bg-blue-400 cursor-wait"
               : "bg-blue-700 hover:bg-blue-800"
           } text-white transition`}
         >
-          {cargandoAsignar ? "Asignando..." : "Asignar solicitud"}
+          {cargandoAsignar ? (
+            <>
+              <Loader2 className="animate-spin mr-2" size={18} /> Asignando...
+            </>
+          ) : (
+            "Asignar solicitud"
+          )}
         </button>
       </div>
     </div>
