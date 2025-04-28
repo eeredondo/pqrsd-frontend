@@ -61,8 +61,9 @@ function DetalleConsultaPQRSD() {
 
       <h2 className="text-2xl font-bold text-blue-800 mb-4">Detalle de la PQRSD</h2>
 
+      {/* PESTAÑAS */}
       <div className="flex gap-4 border-b mb-6">
-        {["datos", "pqrsd", "trazabilidad"].map((key) => (
+        {["datos", "pqrsd", "archivos", "trazabilidad"].map((key) => (
           <button
             key={key}
             onClick={() => setPestana(key)}
@@ -74,11 +75,13 @@ function DetalleConsultaPQRSD() {
           >
             {key === "datos" && "Datos del Peticionario"}
             {key === "pqrsd" && "PQRSD"}
+            {key === "archivos" && "Archivos Anexos"}
             {key === "trazabilidad" && "Trazabilidad"}
           </button>
         ))}
       </div>
 
+      {/* DATOS */}
       {pestana === "datos" && (
         <div className="bg-white border rounded-xl p-6 shadow-md space-y-2 max-w-3xl mx-auto text-sm">
           <p><strong>Radicado:</strong> <span className="font-mono">{solicitud.radicado}</span></p>
@@ -97,6 +100,7 @@ function DetalleConsultaPQRSD() {
         </div>
       )}
 
+      {/* MENSAJE DEL PETICIONARIO */}
       {pestana === "pqrsd" && (
         <div className="bg-white border rounded-xl p-6 shadow-md max-w-6xl mx-auto space-y-6">
           <div>
@@ -105,58 +109,80 @@ function DetalleConsultaPQRSD() {
               {solicitud.mensaje}
             </div>
           </div>
-
-          {solicitud.archivo && (
-            <div>
-              <p className="text-sm font-medium mb-1">📎 Archivo original:</p>
-              <iframe
-                src={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}`}
-                title="Archivo ciudadano"
-                className="w-full h-[500px] border rounded"
-              />
-              <a
-                href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}`}
-                download
-                className="text-blue-600 hover:underline inline-flex items-center mt-2"
-              >
-                <FileDown className="mr-2" size={16} /> Descargar archivo
-              </a>
-            </div>
-          )}
-
-          {solicitud.archivo_respuesta && (
-            <div>
-              <p className="text-sm font-medium mt-4 mb-1">📝 Proyecto de respuesta:</p>
-              <iframe
-                src={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_respuesta}`}
-                title="Archivo respuesta"
-                className="w-full h-[500px] border rounded"
-              />
-              <a
-                href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_respuesta}`}
-                download
-                className="text-blue-600 hover:underline inline-flex items-center mt-2"
-              >
-                <FileDown className="mr-2" size={16} /> Descargar respuesta
-              </a>
-            </div>
-          )}
-
-          {solicitud.archivo_evidencia && (
-            <div>
-              <p className="text-sm font-medium mt-4 mb-1">📄 Evidencia de notificación:</p>
-              <a
-                href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_evidencia}`}
-                download
-                className="text-blue-600 hover:underline inline-flex items-center"
-              >
-                <FileDown className="mr-2" size={16} /> Descargar evidencia
-              </a>
-            </div>
-          )}
         </div>
       )}
 
+      {/* ARCHIVOS ANEXOS */}
+      {pestana === "archivos" && (
+        <div className="bg-white border rounded-xl p-6 shadow-md max-w-5xl mx-auto">
+          <h3 className="text-lg font-semibold mb-4 text-gray-700">📂 Archivos Anexos</h3>
+          <table className="min-w-full text-sm">
+            <thead className="bg-blue-800 text-white">
+              <tr>
+                <th className="px-4 py-2 text-left">Nombre del archivo</th>
+                <th className="px-4 py-2 text-left">Anexado por</th>
+                <th className="px-4 py-2 text-left">Acción</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white text-gray-700">
+              {solicitud.archivo && (
+                <tr className="border-b hover:bg-blue-50">
+                  <td className="px-4 py-2">Archivo del Ciudadano</td>
+                  <td className="px-4 py-2">Ciudadano</td>
+                  <td className="px-4 py-2">
+                    <a
+                      href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}`}
+                      download
+                      className="text-blue-600 hover:underline inline-flex items-center"
+                    >
+                      <FileDown size={16} className="mr-1" /> Descargar
+                    </a>
+                  </td>
+                </tr>
+              )}
+              {solicitud.archivo_respuesta && (
+                <tr className="border-b hover:bg-blue-50">
+                  <td className="px-4 py-2">Proyecto de Respuesta</td>
+                  <td className="px-4 py-2">Responsable</td>
+                  <td className="px-4 py-2">
+                    <a
+                      href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_respuesta}`}
+                      download
+                      className="text-blue-600 hover:underline inline-flex items-center"
+                    >
+                      <FileDown size={16} className="mr-1" /> Descargar
+                    </a>
+                  </td>
+                </tr>
+              )}
+              {solicitud.archivo_evidencia && (
+                <tr className="border-b hover:bg-blue-50">
+                  <td className="px-4 py-2">Evidencia de Notificación</td>
+                  <td className="px-4 py-2">Administrador</td>
+                  <td className="px-4 py-2">
+                    <a
+                      href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_evidencia}`}
+                      download
+                      className="text-blue-600 hover:underline inline-flex items-center"
+                    >
+                      <FileDown size={16} className="mr-1" /> Descargar
+                    </a>
+                  </td>
+                </tr>
+              )}
+              {!solicitud.archivo && !solicitud.archivo_respuesta && !solicitud.archivo_evidencia && (
+                <tr>
+                  <td colSpan="3" className="px-4 py-6 text-center text-gray-400">
+                    No hay archivos anexados a esta solicitud.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* TRAZABILIDAD */}
       {pestana === "trazabilidad" && (
         <div className="bg-white border rounded-xl p-6 shadow-md max-w-6xl mx-auto">
           <h3 className="text-lg font-semibold mb-4 text-gray-700">📌 Trazabilidad del Proceso</h3>
