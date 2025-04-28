@@ -12,6 +12,7 @@ function DetalleSolicitud() {
   const [responsables, setResponsables] = useState([]);
   const [responsableSeleccionado, setResponsableSeleccionado] = useState("");
   const [diasSeleccionados, setDiasSeleccionados] = useState("");
+  const [tipoPQRS, setTipoPQRS] = useState(""); // 👈 Nuevo estado
   const [fechaVencimientoVisual, setFechaVencimientoVisual] = useState("");
   const [cargandoAsignar, setCargandoAsignar] = useState(false);
   const [asignacionExitosa, setAsignacionExitosa] = useState(false);
@@ -80,8 +81,8 @@ function DetalleSolicitud() {
   };
 
   const asignar = async () => {
-    if (!responsableSeleccionado || !diasSeleccionados) {
-      toast.warn("⚠️ Debes seleccionar un responsable y un plazo.", {
+    if (!responsableSeleccionado || !diasSeleccionados || !tipoPQRS.trim()) {
+      toast.warn("⚠️ Debes seleccionar un responsable, un plazo y escribir el tipo de PQRSD.", {
         position: "top-right",
       });
       return;
@@ -91,6 +92,7 @@ function DetalleSolicitud() {
       setCargandoAsignar(true);
       const formData = new FormData();
       formData.append("termino_dias", diasSeleccionados);
+      formData.append("tipo_pqrsd", tipoPQRS); // 👈 Nuevo dato enviado
 
       await axios.post(
         `${import.meta.env.VITE_API_URL}/solicitudes/${id}/asignar/${responsableSeleccionado}`,
@@ -103,7 +105,7 @@ function DetalleSolicitud() {
       );
 
       setTimeout(() => {
-        setAsignacionExitosa(true); // Solo cambiamos estado
+        setAsignacionExitosa(true);
       }, 300);
     } catch (error) {
       console.error("Error al asignar:", error);
@@ -115,7 +117,6 @@ function DetalleSolicitud() {
     }
   };
 
-  // 👇 Aquí mostramos el toast cuando asignación es exitosa
   useEffect(() => {
     if (asignacionExitosa && solicitud) {
       toast.success(`✅ La PQRSD ${solicitud.radicado} fue asignada correctamente.`, {
@@ -135,7 +136,6 @@ function DetalleSolicitud() {
     ? new Date(solicitud.fecha_creacion)
     : null;
 
-  // 👇 Vista de confirmación si ya fue asignado
   if (asignacionExitosa) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-gray-50 px-4">
@@ -224,12 +224,22 @@ function DetalleSolicitud() {
             }
           }}
         />
+
         {fechaVencimientoVisual && (
           <p className="text-sm text-gray-600 mb-4">
             📅 Esta solicitud vencerá el:{" "}
             <span className="font-semibold">{fechaVencimientoVisual}</span>
           </p>
         )}
+
+        <label className="text-sm font-medium block mb-2">Tipo de PQRSD:</label>
+        <input
+          type="text"
+          className="border rounded w-full px-3 py-2 text-sm mb-4"
+          placeholder="Ej: Derecho de petición de información"
+          value={tipoPQRS}
+          onChange={(e) => setTipoPQRS(e.target.value)}
+        />
 
         <button
           onClick={asignar}
