@@ -21,6 +21,9 @@ function PanelAdmin() {
   const [usuarioEditando, setUsuarioEditando] = useState({});
   const [busqueda, setBusqueda] = useState("");
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [mostrarModalReset, setMostrarModalReset] = useState(false);
+  const [usuarioReset, setUsuarioReset] = useState(null);
+  const [nuevaContraseña, setNuevaContraseña] = useState("");
   const token = localStorage.getItem("token");
 
   const rolesDisponibles = ["asignador", "responsable", "revisor", "firmante", "admin"];
@@ -102,19 +105,26 @@ function PanelAdmin() {
     }
   };
 
-  const resetearContraseña = async (id) => {
-    const nuevaContraseña = prompt("🔒 Nueva contraseña para este usuario:");
+  const abrirModalReset = (usuario) => {
+    setUsuarioReset(usuario);
+    setNuevaContraseña("");
+    setMostrarModalReset(true);
+  };
+
+  const confirmarResetearContraseña = async () => {
     if (!nuevaContraseña) {
-      toast.warn("⚠️ No se cambió la contraseña.");
+      toast.warn("⚠️ Debes escribir una nueva contraseña.");
       return;
     }
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${id}/reset-password`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioReset.id}/reset-password`, {
         nueva_contraseña: nuevaContraseña,
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success("✅ Contraseña actualizada");
+      toast.success("✅ Contraseña actualizada correctamente");
+      setMostrarModalReset(false);
+      obtenerUsuarios();
     } catch (err) {
       console.error("Error al resetear contraseña:", err);
       toast.error("❌ No se pudo resetear la contraseña");
@@ -250,10 +260,10 @@ function PanelAdmin() {
                           <Edit2 size={16} /> Editar
                         </button>
                         <button
-                          onClick={() => resetearContraseña(u.id)}
+                          onClick={() => abrirModalReset(u)}
                           className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
                         >
-                          <KeyRound size={16} /> Resetear
+                          <KeyRound size={16} /> Cambiar Contraseña
                         </button>
                       </>
                     )}
@@ -332,6 +342,37 @@ function PanelAdmin() {
                   Crear
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Resetear Contraseña */}
+      {mostrarModalReset && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-6">Cambiar Contraseña</h2>
+            <p className="mb-4 text-sm text-gray-600">Usuario: {usuarioReset?.usuario}</p>
+            <input
+              type="password"
+              placeholder="Nueva contraseña"
+              value={nuevaContraseña}
+              onChange={(e) => setNuevaContraseña(e.target.value)}
+              className="border rounded p-2 w-full mb-6"
+            />
+            <div className="flex justify-between">
+              <button
+                onClick={() => setMostrarModalReset(false)}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarResetearContraseña}
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Cambiar
+              </button>
             </div>
           </div>
         </div>
