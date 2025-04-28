@@ -65,6 +65,7 @@ function ConsultorPQRSD() {
       Fecha: new Date(s.fecha_creacion).toLocaleDateString(),
       "Fecha de finalización": s.fecha_vencimiento ? new Date(s.fecha_vencimiento).toLocaleDateString() : "-",
       Peticionario: `${s.nombre} ${s.apellido}`,
+      TipoPQRSD: s.tipo_pqrsd || "No definido", // 👈 Nuevo campo exportable
       Estado: s.estado,
       Encargado: s.encargado_nombre || "Sin asignar",
     }));
@@ -103,6 +104,7 @@ function ConsultorPQRSD() {
     <div>
       <h2 className="text-2xl font-bold text-blue-800 mb-4">Consultor de PQRSD</h2>
 
+      {/* FILTROS */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
         <input type="text" placeholder="Radicado" value={filtroRadicado} onChange={(e) => setFiltroRadicado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
         <input type="text" placeholder="Nombre del peticionario" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} className="border rounded px-3 py-2 text-sm" />
@@ -120,20 +122,25 @@ function ConsultorPQRSD() {
         </select>
       </div>
 
+      {/* EXPORTAR */}
       <div className="mb-4 flex justify-end">
         <button onClick={exportarExcel} className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm">
           <FileDown size={16} /> Exportar a Excel
         </button>
       </div>
 
+      {/* TABLA */}
       <div className="overflow-x-auto shadow border border-gray-200 rounded-lg">
         <table className="min-w-full bg-white text-sm">
           <thead className="bg-blue-800 text-white text-left">
             <tr>
-              <th className="px-4 py-2 cursor-pointer" onClick={() => cambiarOrden("radicado")}>Radicado <ArrowUpDown size={14} className="inline-block ml-1" /></th>
+              <th className="px-4 py-2 cursor-pointer" onClick={() => cambiarOrden("radicado")}>
+                Radicado <ArrowUpDown size={14} className="inline-block ml-1" />
+              </th>
               <th className="px-4 py-2">Fecha</th>
               <th className="px-4 py-2">Fecha de finalización</th>
               <th className="px-4 py-2">Peticionario</th>
+              <th className="px-4 py-2">Tipo de PQRSD</th> {/* 👈 Nueva columna */}
               <th className="px-4 py-2">Encargado</th>
               <th className="px-4 py-2">Estado</th>
               <th className="px-4 py-2">Acción</th>
@@ -154,10 +161,17 @@ function ConsultorPQRSD() {
                   )}
                 </td>
                 <td className="px-4 py-2">{s.nombre} {s.apellido}</td>
+                <td className="px-4 py-2">{s.tipo_pqrsd || "No definido"}</td> {/* 👈 Nueva celda */}
                 <td className="px-4 py-2">{s.encargado_nombre || "Sin asignar"}</td>
-                <td className="px-4 py-2"><span className={`px-2 py-1 rounded text-xs font-semibold ${badgeEstado(s.estado)}`}>{s.estado}</span></td>
                 <td className="px-4 py-2">
-                  <button onClick={() => navigate(`/consultor/solicitud/${s.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">Ver detalles</button>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${badgeEstado(s.estado)}`}>
+                    {s.estado}
+                  </span>
+                </td>
+                <td className="px-4 py-2">
+                  <button onClick={() => navigate(`/consultor/solicitud/${s.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                    Ver detalles
+                  </button>
                 </td>
               </tr>
             ))}
@@ -165,6 +179,7 @@ function ConsultorPQRSD() {
         </table>
       </div>
 
+      {/* PAGINACIÓN */}
       <div className="flex justify-center mt-4 space-x-2">
         {Array.from({ length: totalPaginas }, (_, i) => (
           <button
