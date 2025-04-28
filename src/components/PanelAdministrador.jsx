@@ -5,10 +5,13 @@ import {
   Trash2,
   ShieldCheck,
   Loader,
-  AtSign,
-  KeyRound,
-  Users
+  Users,
+  Edit2,
+  Save,
+  Search
 } from "lucide-react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function PanelAdmin() {
   const [usuarios, setUsuarios] = useState([]);
@@ -20,6 +23,8 @@ function PanelAdmin() {
     rol: "asignador",
   });
   const [loading, setLoading] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(null); // 👈 para saber qué usuario estoy editando
+  const [busqueda, setBusqueda] = useState(""); // 👈 texto de búsqueda
   const token = localStorage.getItem("token");
 
   const rolesDisponibles = ["asignador", "responsable", "revisor", "firmante", "admin"];
@@ -41,7 +46,7 @@ function PanelAdmin() {
 
   const crearUsuario = async () => {
     if (!nuevo.usuario || !nuevo.nombre || !nuevo.correo || !nuevo.contraseña) {
-      alert("⚠️ Todos los campos son obligatorios.");
+      toast.warn("⚠️ Todos los campos son obligatorios.");
       return;
     }
 
@@ -50,12 +55,12 @@ function PanelAdmin() {
       await axios.post(`${import.meta.env.VITE_API_URL}/usuarios`, nuevo, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("✅ Usuario creado exitosamente");
+      toast.success("✅ Usuario creado exitosamente");
       setNuevo({ usuario: "", nombre: "", correo: "", contraseña: "", rol: "asignador" });
       obtenerUsuarios();
     } catch (err) {
       console.error("Error al crear usuario:", err);
-      alert("❌ No se pudo crear el usuario");
+      toast.error("❌ No se pudo crear el usuario");
     } finally {
       setLoading(false);
     }
@@ -68,11 +73,33 @@ function PanelAdmin() {
       await axios.delete(`${import.meta.env.VITE_API_URL}/usuarios/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success("✅ Usuario eliminado");
       obtenerUsuarios();
     } catch (err) {
       console.error("Error al eliminar usuario:", err);
+      toast.error("❌ No se pudo eliminar el usuario");
     }
   };
+
+  const guardarEdicion = async (usuarioEditado) => {
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL}/usuarios/${usuarioEditado.id}`, usuarioEditado, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("✅ Usuario actualizado");
+      setModoEdicion(null);
+      obtenerUsuarios();
+    } catch (err) {
+      console.error("Error al actualizar usuario:", err);
+      toast.error("❌ No se pudo actualizar el usuario");
+    }
+  };
+
+  const usuariosFiltrados = usuarios.filter(u =>
+    u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+    u.usuario.toLowerCase().includes(busqueda.toLowerCase()) ||
+    u.correo.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   return (
     <div className="p-6">
@@ -80,6 +107,7 @@ function PanelAdmin() {
         <ShieldCheck size={24} /> Panel de Administración
       </h2>
 
+      {/* Crear nuevo usuario */}
       <div className="bg-white border p-6 rounded shadow mb-10">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <UserPlus size={18} /> Crear nuevo usuario
@@ -134,6 +162,19 @@ function PanelAdmin() {
         </button>
       </div>
 
+      {/* Buscar usuario */}
+      <div className="mb-6 flex items-center gap-2">
+        <Search className="text-gray-600" />
+        <input
+          type="text"
+          placeholder="Buscar usuarios..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="border rounded p-2 w-full sm:max-w-xs"
+        />
+      </div>
+
+      {/* Tabla de usuarios */}
       <div className="bg-white border p-6 rounded shadow">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <Users size={20} /> Usuarios registrados
@@ -150,23 +191,92 @@ function PanelAdmin() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
-              {usuarios.map((u) => (
+              {usuariosFiltrados.map((u) => (
                 <tr key={u.id} className="hover:bg-blue-50">
-                  <td className="px-4 py-3">{u.usuario}</td>
-                  <td className="px-4 py-3">{u.nombre}</td>
-                  <td className="px-4 py-3">{u.correo}</td>
-                  <td className="px-4 py-3 capitalize">{u.rol}</td>
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => eliminarUsuario(u.id)}
-                      className="text-red-600 hover:text-red-800 flex items-center gap-1 mx-auto"
-                    >
-                      <Trash2 size={16} /> Eliminar
-                    </button>
+                  <td className="px-4 py-3">
+                    {modoEdicion === u.id ? (
+                      <input
+                        value={u.usuario}
+                        disabled
+                        className="border rounded p-1 w-full bg-gray-100"
+                      />
+                    ) : (
+                      u.usuario
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {modoEdicion === u.id ? (
+                      <input
+                        value={u.nombre}
+                        onChange={(e) =>
+                          setUsuarios(usuarios.map((x) => x.id === u.id ? { ...x, nombre: e.target.value } : x))
+                        }
+                        className="border rounded p-1 w-full"
+                      />
+                    ) : (
+                      u.nombre
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {modoEdicion === u.id ? (
+                      <input
+                        value={u.correo}
+                        onChange={(e) =>
+                          setUsuarios(usuarios.map((x) => x.id === u.id ? { ...x, correo: e.target.value } : x))
+                        }
+                        className="border rounded p-1 w-full"
+                      />
+                    ) : (
+                      u.correo
+                    )}
+                  </td>
+                  <td className="px-4 py-3 capitalize">
+                    {modoEdicion === u.id ? (
+                      <select
+                        value={u.rol}
+                        onChange={(e) =>
+                          setUsuarios(usuarios.map((x) => x.id === u.id ? { ...x, rol: e.target.value } : x))
+                        }
+                        className="border rounded p-1 w-full"
+                      >
+                        {rolesDisponibles.map((rol) => (
+                          <option key={rol} value={rol}>
+                            {rol.charAt(0).toUpperCase() + rol.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      u.rol
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center flex gap-2 justify-center">
+                    {modoEdicion === u.id ? (
+                      <button
+                        onClick={() => guardarEdicion(u)}
+                        className="text-green-600 hover:text-green-800 flex items-center gap-1"
+                      >
+                        <Save size={16} /> Guardar
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setModoEdicion(u.id)}
+                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        >
+                          <Edit2 size={16} /> Editar
+                        </button>
+                        <button
+                          onClick={() => eliminarUsuario(u.id)}
+                          className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                        >
+                          <Trash2 size={16} /> Eliminar
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
-              {usuarios.length === 0 && (
+              {usuariosFiltrados.length === 0 && (
                 <tr>
                   <td colSpan="5" className="text-center text-gray-500 py-4 italic">
                     No hay usuarios registrados.
