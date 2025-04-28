@@ -12,7 +12,7 @@ function ConsultorPQRSD() {
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState("");  // Filtro por tipo de PQRSD
+  const [filtroTipo, setFiltroTipo] = useState(""); // Filtro de tipo PQRSD
   const [orden, setOrden] = useState({ campo: "radicado", asc: false });
   const [paginaActual, setPaginaActual] = useState(1);
   const porPagina = 10;
@@ -48,7 +48,7 @@ function ConsultorPQRSD() {
       nombreCompleto.includes(filtroNombre.toLowerCase()) &&
       encargado.includes(filtroEncargado.toLowerCase()) &&
       (!filtroEstado || s.estado === filtroEstado) &&
-      (!filtroTipo || s.tipo_pqrsd === filtroTipo) &&  // Filtro por tipo de PQRSD
+      (!filtroTipo || s.tipo_pqrsd === filtroTipo) &&  // Aquí estamos filtrando por Tipo de PQRSD
       (!fechaDesde || fecha >= new Date(fechaDesde)) &&
       (!fechaHasta || fecha <= new Date(fechaHasta))
     );
@@ -154,6 +154,7 @@ function ConsultorPQRSD() {
           <option value="Para notificar">Para notificar</option>
           <option value="Terminado">Terminado</option>
         </select>
+        
         {/* Filtro por Tipo de PQRSD */}
         <select
           value={filtroTipo}
