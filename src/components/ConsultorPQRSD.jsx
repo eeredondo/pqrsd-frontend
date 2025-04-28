@@ -12,6 +12,7 @@ function ConsultorPQRSD() {
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("");  // Agregado filtro por tipo
   const [orden, setOrden] = useState({ campo: "radicado", asc: false });
   const [paginaActual, setPaginaActual] = useState(1);
   const porPagina = 10;
@@ -47,6 +48,7 @@ function ConsultorPQRSD() {
       nombreCompleto.includes(filtroNombre.toLowerCase()) &&
       encargado.includes(filtroEncargado.toLowerCase()) &&
       (!filtroEstado || s.estado === filtroEstado) &&
+      (!filtroTipo || s.tipo_pqrsd === filtroTipo) &&  // Filtro por tipo de PQRSD
       (!fechaDesde || fecha >= new Date(fechaDesde)) &&
       (!fechaHasta || fecha <= new Date(fechaHasta))
     );
@@ -65,7 +67,7 @@ function ConsultorPQRSD() {
       Fecha: new Date(s.fecha_creacion).toLocaleDateString(),
       "Fecha de finalización": s.fecha_vencimiento ? new Date(s.fecha_vencimiento).toLocaleDateString() : "-",
       Peticionario: `${s.nombre} ${s.apellido}`,
-      TipoPQRSD: s.tipo_pqrsd || "No definido", // 👈 Nuevo campo exportable
+      TipoPQRSD: s.tipo_pqrsd || "No definido",
       Estado: s.estado,
       Encargado: s.encargado_nombre || "Sin asignar",
     }));
@@ -106,12 +108,44 @@ function ConsultorPQRSD() {
 
       {/* FILTROS */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
-        <input type="text" placeholder="Radicado" value={filtroRadicado} onChange={(e) => setFiltroRadicado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
-        <input type="text" placeholder="Nombre del peticionario" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} className="border rounded px-3 py-2 text-sm" />
-        <input type="text" placeholder="Encargado actual" value={filtroEncargado} onChange={(e) => setFiltroEncargado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
-        <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="border rounded px-3 py-2 text-sm" />
-        <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="border rounded px-3 py-2 text-sm" />
-        <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="border rounded px-3 py-2 text-sm">
+        <input
+          type="text"
+          placeholder="Radicado"
+          value={filtroRadicado}
+          onChange={(e) => setFiltroRadicado(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        />
+        <input
+          type="text"
+          placeholder="Nombre del peticionario"
+          value={filtroNombre}
+          onChange={(e) => setFiltroNombre(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        />
+        <input
+          type="text"
+          placeholder="Encargado actual"
+          value={filtroEncargado}
+          onChange={(e) => setFiltroEncargado(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        />
+        <input
+          type="date"
+          value={fechaDesde}
+          onChange={(e) => setFechaDesde(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        />
+        <input
+          type="date"
+          value={fechaHasta}
+          onChange={(e) => setFechaHasta(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        />
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        >
           <option value="">Todos</option>
           <option value="Pendiente">Pendiente</option>
           <option value="Asignado">Asignado</option>
@@ -120,11 +154,25 @@ function ConsultorPQRSD() {
           <option value="Para notificar">Para notificar</option>
           <option value="Terminado">Terminado</option>
         </select>
+        {/* Filtro por Tipo de PQRSD */}
+        <select
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value)}
+          className="border rounded px-3 py-2 text-sm"
+        >
+          <option value="">Todos</option>
+          <option value="Queja">Queja</option>
+          <option value="Sugerencia">Sugerencia</option>
+          <option value="Reclamo">Reclamo</option>
+        </select>
       </div>
 
       {/* EXPORTAR */}
       <div className="mb-4 flex justify-end">
-        <button onClick={exportarExcel} className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm">
+        <button
+          onClick={exportarExcel}
+          className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm"
+        >
           <FileDown size={16} /> Exportar a Excel
         </button>
       </div>
@@ -153,7 +201,12 @@ function ConsultorPQRSD() {
                 <td className="px-4 py-2">{new Date(s.fecha_creacion).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
                   {s.fecha_vencimiento ? (
-                    <span className={`font-semibold px-2 py-1 rounded text-xs ${new Date(s.fecha_vencimiento) < new Date() ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`} title={calcularTooltip(s.fecha_vencimiento)}>
+                    <span
+                      className={`font-semibold px-2 py-1 rounded text-xs ${
+                        new Date(s.fecha_vencimiento) < new Date() ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                      }`}
+                      title={calcularTooltip(s.fecha_vencimiento)}
+                    >
                       {new Date(s.fecha_vencimiento).toLocaleDateString()}
                     </span>
                   ) : (
