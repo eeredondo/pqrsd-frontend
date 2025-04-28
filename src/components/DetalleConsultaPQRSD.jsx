@@ -8,7 +8,7 @@ function DetalleConsultaPQRSD() {
   const navigate = useNavigate();
   const [solicitud, setSolicitud] = useState(null);
   const [trazabilidad, setTrazabilidad] = useState([]);
-  const [pestana, setPestana] = useState("pqrsd");
+  const [pestana, setPestana] = useState("datos");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -199,7 +199,7 @@ function DetalleConsultaPQRSD() {
                   </p>
                   {(item.usuario_remitente || item.usuario_destinatario) && (
                     <p className="text-xs text-gray-600">
-                      {item.usuario_remitente && <span><strong>De:</strong> {item.usuario_remitente}</span>}{" "}
+                      {item.usuario_remitente && <span><strong>De:</strong> {item.usuario_remitente}</span>} {" "}
                       {item.usuario_destinatario && <span>→ <strong>Para:</strong> {item.usuario_destinatario}</span>}
                     </p>
                   )}
