@@ -12,7 +12,7 @@ function ConsultorPQRSD() {
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState("");  // Agregado filtro por tipo
+  const [filtroTipo, setFiltroTipo] = useState("");  // Filtro por tipo de PQRSD
   const [orden, setOrden] = useState({ campo: "radicado", asc: false });
   const [paginaActual, setPaginaActual] = useState(1);
   const porPagina = 10;
@@ -107,7 +107,7 @@ function ConsultorPQRSD() {
       <h2 className="text-2xl font-bold text-blue-800 mb-4">Consultor de PQRSD</h2>
 
       {/* FILTROS */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4">
         <input
           type="text"
           placeholder="Radicado"
