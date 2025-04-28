@@ -85,8 +85,8 @@ function PanelAsignador() {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTodasSolicitudes(res.data); // Todas
-      const pendientes = res.data.filter((s) => s.estado === "Pendiente"); // Solo pendientes
+      setTodasSolicitudes(res.data);
+      const pendientes = res.data.filter((s) => s.estado === "Pendiente");
       setSolicitudes(pendientes);
     } catch (err) {
       console.error("Error al obtener solicitudes:", err);
@@ -176,7 +176,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">PQRSD asignadas</p>
             <p className="text-xl font-bold text-green-600">
-              <CountUp end={todasSolicitudes.filter(s => s.asignado === true).length} duration={1} />
+              <CountUp end={todasSolicitudes.filter(s => s.asignado_a !== null).length} duration={1} />
             </p>
           </div>
         </div>
@@ -186,7 +186,7 @@ function PanelAsignador() {
           <div>
             <p className="text-sm text-gray-500">Sin asignar</p>
             <p className="text-xl font-bold text-orange-500">
-              <CountUp end={todasSolicitudes.filter(s => s.asignado !== true).length} duration={1} />
+              <CountUp end={todasSolicitudes.filter(s => s.asignado_a === null).length} duration={1} />
             </p>
           </div>
         </div>
