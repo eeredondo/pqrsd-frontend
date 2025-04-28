@@ -5,8 +5,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import {
   FileDown, ArrowLeft, Mail, User,
-  Phone, MapPin, Send
+  Phone, MapPin, Send, CheckCircle2, Loader2
 } from "lucide-react";
+import { toast } from "react-toastify";
 import "react-quill/dist/quill.snow.css";
 
 dayjs.extend(relativeTime);
@@ -15,14 +16,14 @@ function DetalleResponsable() {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
   const [solicitud, setSolicitud] = useState(null);
   const [pestana, setPestana] = useState("pqrsd");
   const [respuesta, setRespuesta] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [trazabilidad, setTrazabilidad] = useState([]);
   const [archivoWord, setArchivoWord] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [respuestaExitosa, setRespuestaExitosa] = useState(false);
 
   useEffect(() => {
     const fetchSolicitud = async () => {
@@ -53,7 +54,15 @@ function DetalleResponsable() {
   }, [id, token, navigate]);
 
   const enviarRespuesta = async () => {
+    if (!mensaje.trim()) {
+      toast.warn("⚠️ El mensaje para el revisor no puede estar vacío.", {
+        position: "top-right",
+      });
+      return;
+    }
+
     try {
+      setEnviando(true);
       const formData = new FormData();
       formData.append("mensaje", mensaje);
       formData.append("contenido", respuesta);
@@ -65,17 +74,45 @@ function DetalleResponsable() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setMensaje("");
-      setRespuesta("");
-      setArchivoWord(null);
-      setShowModal(true);
+      setRespuestaExitosa(true);
     } catch (error) {
       console.error("Error al enviar la respuesta:", error);
-      alert("Error al enviar la respuesta.");
+      toast.error("❌ Error al enviar la respuesta.", {
+        position: "top-right",
+      });
+    } finally {
+      setEnviando(false);
     }
   };
 
-  if (!solicitud) return <div className="p-6">Cargando...</div>;
+  useEffect(() => {
+    if (respuestaExitosa && solicitud) {
+      toast.success(`✅ Respuesta enviada correctamente para ${solicitud.radicado}`, {
+        position: "top-right",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        navigate("/responsable");
+      }, 3000);
+    }
+  }, [respuestaExitosa, solicitud, navigate]);
+
+  if (!solicitud) return <div className="p-6">Cargando solicitud...</div>;
+
+  // Si la respuesta fue enviada, mostrar pantalla de éxito
+  if (respuestaExitosa) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 px-4">
+        <CheckCircle2 size={80} className="text-green-500 mb-4 animate-pulse" />
+        <h1 className="text-2xl font-bold text-green-700 mb-2">¡Respuesta enviada!</h1>
+        <p className="text-gray-700 mb-6 text-center">
+          El radicado <span className="font-semibold">{solicitud.radicado}</span> fue enviado al revisor correctamente.
+        </p>
+        <p className="text-sm text-gray-500">Redirigiendo al panel de responsable...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -157,8 +194,12 @@ function DetalleResponsable() {
           </div>
 
           <div className="text-right">
-            <button onClick={enviarRespuesta} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2">
-              <Send size={16} /> Enviar
+            <button
+              onClick={enviarRespuesta}
+              disabled={enviando}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2 justify-center"
+            >
+              {enviando ? <><Loader2 className="animate-spin" size={18} /> Enviando...</> : <><Send size={16} /> Enviar</>}
             </button>
           </div>
         </div>
@@ -218,22 +259,6 @@ function DetalleResponsable() {
                 </a>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl shadow-lg max-w-sm text-center">
-            <div className="text-green-600 text-5xl mb-4">✅</div>
-            <h3 className="text-xl font-bold mb-2">¡Respuesta enviada!</h3>
-            <p className="text-gray-600 mb-6">La solicitud fue enviada al revisor correctamente.</p>
-            <button
-              onClick={() => navigate("/responsable")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold"
-            >
-              Volver al panel
-            </button>
           </div>
         </div>
       )}
