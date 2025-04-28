@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react"; // 👈 Importamos spinner Loader2
+import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react"; // 👈 usamos Loader2 y CheckCircle2
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -14,6 +14,7 @@ function DetalleSolicitud() {
   const [diasSeleccionados, setDiasSeleccionados] = useState("");
   const [fechaVencimientoVisual, setFechaVencimientoVisual] = useState("");
   const [cargandoAsignar, setCargandoAsignar] = useState(false);
+  const [asignacionExitosa, setAsignacionExitosa] = useState(false); // 👈 NUEVO
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -101,14 +102,14 @@ function DetalleSolicitud() {
         }
       );
 
-      toast.success(`✅ Radicado ${solicitud.radicado} asignado correctamente.`, {
+      toast.success(`✅ PQRSD asignada correctamente.`, {
         position: "top-right",
-        autoClose: 2000,
+        autoClose: 1500,
       });
 
       setTimeout(() => {
-        navigate("/asignador");
-      }, 2200); // Espera 2.2 segundos para animar bien la transición
+        setAsignacionExitosa(true); // 👈 cambia el estado
+      }, 1500);
     } catch (error) {
       console.error("Error al asignar:", error);
       toast.error("❌ Error al asignar solicitud", {
@@ -124,6 +125,23 @@ function DetalleSolicitud() {
   const fechaRadicacion = solicitud.fecha_creacion && !isNaN(Date.parse(solicitud.fecha_creacion))
     ? new Date(solicitud.fecha_creacion)
     : null;
+
+  // 👇 Si la asignación fue exitosa, mostrar confirmación bonita
+  if (asignacionExitosa) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 px-4">
+        <CheckCircle2 size={80} className="text-green-500 mb-4 animate-pulse" />
+        <h1 className="text-2xl font-bold text-green-700 mb-2">¡PQRSD asignada correctamente!</h1>
+        <p className="text-gray-700 mb-6 text-center">
+          El radicado <span className="font-semibold">{solicitud.radicado}</span> fue asignado exitosamente.
+        </p>
+        <p className="text-sm text-gray-500">Redirigiendo al panel de asignación...</p>
+
+        {/* Redirige automáticamente */}
+        {setTimeout(() => navigate("/asignador"), 3000)}
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto bg-white p-6 shadow rounded-lg border border-gray-200">
