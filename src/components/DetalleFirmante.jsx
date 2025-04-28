@@ -3,15 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
 import {
-  ArrowLeft,
-  FileDown,
-  Mail,
-  User,
-  Phone,
-  MapPin,
-  Upload,
-  Send,
+  ArrowLeft, FileDown, Mail, User, Phone, MapPin, Send, Upload, CheckCircle2
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 function DetalleFirmante() {
   const { id } = useParams();
@@ -21,6 +15,8 @@ function DetalleFirmante() {
   const [trazabilidad, setTrazabilidad] = useState([]);
   const [archivoFirmado, setArchivoFirmado] = useState(null);
   const [pestana, setPestana] = useState("pqrsd");
+  const [enviando, setEnviando] = useState(false);
+  const [firmado, setFirmado] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,14 +41,16 @@ function DetalleFirmante() {
 
   const firmarYEnviar = async () => {
     if (!archivoFirmado) {
-      alert("⚠️ Debes anexar el archivo firmado.");
+      toast.warn("⚠️ Debes adjuntar el archivo firmado.", { position: "top-right" });
       return;
     }
 
-    const formData = new FormData();
-    formData.append("archivo", archivoFirmado);
-
     try {
+      setEnviando(true);
+
+      const formData = new FormData();
+      formData.append("archivo", archivoFirmado);
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/solicitudes/${id}/firmar`,
         formData,
@@ -63,15 +61,39 @@ function DetalleFirmante() {
           },
         }
       );
-      alert("✅ Solicitud firmada y enviada al asignador");
-      navigate("/firmante");
+
+      toast.success("✅ Solicitud firmada correctamente", { position: "top-right" });
+      setFirmado(true);
     } catch (error) {
       console.error("Error al firmar:", error);
-      alert("❌ Error al enviar la solicitud firmada");
+      toast.error("❌ Error al enviar la solicitud firmada", { position: "top-right" });
+    } finally {
+      setEnviando(false);
     }
   };
 
+  useEffect(() => {
+    if (firmado) {
+      setTimeout(() => {
+        navigate("/firmante");
+      }, 3000);
+    }
+  }, [firmado, navigate]);
+
   if (!solicitud) return <div className="p-6">Cargando detalles...</div>;
+
+  if (firmado) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 px-4">
+        <CheckCircle2 size={80} className="text-green-500 mb-4 animate-pulse" />
+        <h1 className="text-2xl font-bold text-gray-700 mb-2">¡Solicitud firmada!</h1>
+        <p className="text-gray-600 mb-6">
+          El radicado <span className="font-semibold">{solicitud.radicado}</span> fue enviado al asignador exitosamente.
+        </p>
+        <p className="text-sm text-gray-500">Redirigiendo al panel de firmantes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -108,18 +130,10 @@ function DetalleFirmante() {
       {/* DATOS DEL PETICIONARIO */}
       {pestana === "datos" && (
         <div className="bg-white border rounded-xl p-6 shadow-md space-y-2 max-w-3xl mx-auto">
-          <p>
-            <User className="inline mr-2 text-gray-500" /> {solicitud.nombre} {solicitud.apellido}
-          </p>
-          <p>
-            <Mail className="inline mr-2 text-gray-500" /> {solicitud.correo}
-          </p>
-          <p>
-            <Phone className="inline mr-2 text-gray-500" /> {solicitud.celular}
-          </p>
-          <p>
-            <MapPin className="inline mr-2 text-gray-500" /> {solicitud.municipio}, {solicitud.departamento}
-          </p>
+          <p><User className="inline mr-2 text-gray-500" /> {solicitud.nombre} {solicitud.apellido}</p>
+          <p><Mail className="inline mr-2 text-gray-500" /> {solicitud.correo}</p>
+          <p><Phone className="inline mr-2 text-gray-500" /> {solicitud.celular}</p>
+          <p><MapPin className="inline mr-2 text-gray-500" /> {solicitud.municipio}, {solicitud.departamento}</p>
         </div>
       )}
 
@@ -167,9 +181,10 @@ function DetalleFirmante() {
           <div className="text-right">
             <button
               onClick={firmarYEnviar}
+              disabled={enviando}
               className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2"
             >
-              <Send size={16} /> Enviar al Asignador
+              <Send size={16} /> {enviando ? "Enviando..." : "Enviar al Asignador"}
             </button>
           </div>
         </div>
@@ -187,12 +202,10 @@ function DetalleFirmante() {
                   <time className="block mb-1 text-sm text-gray-500">
                     {dayjs(item.fecha).format("DD/MM/YYYY HH:mm")}
                   </time>
-                  <p className="text-base font-semibold text-blue-700 mb-1">
-                    {item.evento}
-                  </p>
+                  <p className="text-base font-semibold text-blue-700 mb-1">{item.evento}</p>
                   {(item.usuario_remitente || item.usuario_destinatario) && (
                     <p className="text-sm text-gray-600">
-                      {item.usuario_remitente && <strong>De:</strong>} {item.usuario_remitente}{" "}
+                      {item.usuario_remitente && <span><strong>De:</strong> {item.usuario_remitente}</span>}{" "}
                       {item.usuario_destinatario && <span>→ <strong>Para:</strong> {item.usuario_destinatario}</span>}
                     </p>
                   )}
