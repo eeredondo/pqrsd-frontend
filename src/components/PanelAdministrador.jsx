@@ -8,7 +8,8 @@ import {
   Users,
   Edit2,
   Save,
-  Search
+  Search,
+  PlusCircle
 } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,11 +24,20 @@ function PanelAdmin() {
     rol: "asignador",
   });
   const [loading, setLoading] = useState(false);
-  const [modoEdicion, setModoEdicion] = useState(null); // 👈 para saber qué usuario estoy editando
-  const [busqueda, setBusqueda] = useState(""); // 👈 texto de búsqueda
+  const [modoEdicion, setModoEdicion] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [mostrarModal, setMostrarModal] = useState(false); // 👈 Modal de creación
   const token = localStorage.getItem("token");
 
   const rolesDisponibles = ["asignador", "responsable", "revisor", "firmante", "admin"];
+
+  const rolColor = {
+    asignador: "bg-blue-100 text-blue-700",
+    responsable: "bg-green-100 text-green-700",
+    revisor: "bg-yellow-100 text-yellow-700",
+    firmante: "bg-purple-100 text-purple-700",
+    admin: "bg-red-100 text-red-700",
+  };
 
   const obtenerUsuarios = async () => {
     try {
@@ -57,6 +67,7 @@ function PanelAdmin() {
       });
       toast.success("✅ Usuario creado exitosamente");
       setNuevo({ usuario: "", nombre: "", correo: "", contraseña: "", rol: "asignador" });
+      setMostrarModal(false);
       obtenerUsuarios();
     } catch (err) {
       console.error("Error al crear usuario:", err);
@@ -107,62 +118,17 @@ function PanelAdmin() {
         <ShieldCheck size={24} /> Panel de Administración
       </h2>
 
-      {/* Crear nuevo usuario */}
-      <div className="bg-white border p-6 rounded shadow mb-10">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <UserPlus size={18} /> Crear nuevo usuario
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-          <input
-            type="text"
-            placeholder="Usuario"
-            value={nuevo.usuario}
-            onChange={(e) => setNuevo({ ...nuevo, usuario: e.target.value })}
-            className="border rounded p-2 w-full"
-          />
-          <input
-            type="text"
-            placeholder="Nombre completo"
-            value={nuevo.nombre}
-            onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
-            className="border rounded p-2 w-full"
-          />
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            value={nuevo.correo}
-            onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })}
-            className="border rounded p-2 w-full"
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={nuevo.contraseña}
-            onChange={(e) => setNuevo({ ...nuevo, contraseña: e.target.value })}
-            className="border rounded p-2 w-full"
-          />
-          <select
-            value={nuevo.rol}
-            onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}
-            className="border rounded p-2 w-full"
-          >
-            {rolesDisponibles.map((rol) => (
-              <option key={rol} value={rol}>
-                {rol.charAt(0).toUpperCase() + rol.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Botón para abrir modal */}
+      <div className="flex justify-end mb-6">
         <button
-          onClick={crearUsuario}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+          onClick={() => setMostrarModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2"
         >
-          {loading ? <Loader size={16} className="animate-spin" /> : <UserPlus size={16} />}
-          Crear Usuario
+          <PlusCircle size={18} /> Crear Nuevo Usuario
         </button>
       </div>
 
-      {/* Buscar usuario */}
+      {/* Barra de búsqueda */}
       <div className="mb-6 flex items-center gap-2">
         <Search className="text-gray-600" />
         <input
@@ -193,17 +159,7 @@ function PanelAdmin() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {usuariosFiltrados.map((u) => (
                 <tr key={u.id} className="hover:bg-blue-50">
-                  <td className="px-4 py-3">
-                    {modoEdicion === u.id ? (
-                      <input
-                        value={u.usuario}
-                        disabled
-                        className="border rounded p-1 w-full bg-gray-100"
-                      />
-                    ) : (
-                      u.usuario
-                    )}
-                  </td>
+                  <td className="px-4 py-3">{u.usuario}</td>
                   <td className="px-4 py-3">
                     {modoEdicion === u.id ? (
                       <input
@@ -231,23 +187,9 @@ function PanelAdmin() {
                     )}
                   </td>
                   <td className="px-4 py-3 capitalize">
-                    {modoEdicion === u.id ? (
-                      <select
-                        value={u.rol}
-                        onChange={(e) =>
-                          setUsuarios(usuarios.map((x) => x.id === u.id ? { ...x, rol: e.target.value } : x))
-                        }
-                        className="border rounded p-1 w-full"
-                      >
-                        {rolesDisponibles.map((rol) => (
-                          <option key={rol} value={rol}>
-                            {rol.charAt(0).toUpperCase() + rol.slice(1)}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      u.rol
-                    )}
+                    <span className={`px-2 py-1 rounded-full text-xs ${rolColor[u.rol]}`}>
+                      {u.rol}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-center flex gap-2 justify-center">
                     {modoEdicion === u.id ? (
@@ -287,6 +229,71 @@ function PanelAdmin() {
           </table>
         </div>
       </div>
+
+      {/* Modal de creación de usuario */}
+      {mostrarModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-6">Crear nuevo usuario</h2>
+            <div className="flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Usuario"
+                value={nuevo.usuario}
+                onChange={(e) => setNuevo({ ...nuevo, usuario: e.target.value })}
+                className="border rounded p-2 w-full"
+              />
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={nuevo.nombre}
+                onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
+                className="border rounded p-2 w-full"
+              />
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                value={nuevo.correo}
+                onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })}
+                className="border rounded p-2 w-full"
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={nuevo.contraseña}
+                onChange={(e) => setNuevo({ ...nuevo, contraseña: e.target.value })}
+                className="border rounded p-2 w-full"
+              />
+              <select
+                value={nuevo.rol}
+                onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}
+                className="border rounded p-2 w-full"
+              >
+                {rolesDisponibles.map((rol) => (
+                  <option key={rol} value={rol}>
+                    {rol.charAt(0).toUpperCase() + rol.slice(1)}
+                  </option>
+                ))}
+              </select>
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={() => setMostrarModal(false)}
+                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={crearUsuario}
+                  className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                >
+                  {loading ? <Loader size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                  Crear
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
