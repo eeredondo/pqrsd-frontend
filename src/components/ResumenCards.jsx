@@ -19,8 +19,8 @@ function ResumenCards() {
       });
 
       setTotal(res.data.length);
-      setAsignadas(res.data.filter((s) => s.estado === "Asignado").length);
-      setPendientes(res.data.filter((s) => s.estado === "Pendiente").length);
+      setAsignadas(res.data.filter((s) => s.asignado_a).length);
+      setPendientes(res.data.filter((s) => !s.asignado_a).length);
     } catch (err) {
       console.error("Error al cargar resumen:", err);
     }
