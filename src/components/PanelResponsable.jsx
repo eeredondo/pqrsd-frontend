@@ -132,6 +132,7 @@ function PanelResponsable() {
               <th className="px-4 py-3">Fecha</th>
               <th className="px-4 py-3">Vencimiento</th>
               <th className="px-4 py-3">Peticionario</th>
+              <th className="px-4 py-3">Tipo de PQRSD</th> {/* 👈 NUEVA COLUMNA */}
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3 text-center">Acción</th>
             </tr>
@@ -147,6 +148,7 @@ function PanelResponsable() {
                     : "Sin fecha"}
                 </td>
                 <td className="px-4 py-3">{s.nombre} {s.apellido}</td>
+                <td className="px-4 py-3">{s.tipo_pqrsd || "No definido"}</td> {/* 👈 NUEVO DATO */}
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 rounded text-xs font-semibold ${
                     s.estado === "Devuelto"
@@ -170,7 +172,7 @@ function PanelResponsable() {
             ))}
             {solicitudes.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center p-4 text-gray-500 italic">
+                <td colSpan="7" className="text-center p-4 text-gray-500 italic">
                   No tienes solicitudes asignadas.
                 </td>
               </tr>
