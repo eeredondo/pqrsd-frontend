@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
 import {
-  ArrowLeft, FileDown, Mail, User, Phone, MapPin
+  ArrowLeft, FileDown, Mail, User, Phone, MapPin, Loader2, CheckCircle2, XCircle
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 function DetalleRevisor() {
   const { id } = useParams();
@@ -14,6 +15,8 @@ function DetalleRevisor() {
   const [trazabilidad, setTrazabilidad] = useState([]);
   const [comentario, setComentario] = useState("");
   const [pestana, setPestana] = useState("pqrsd");
+  const [enviando, setEnviando] = useState(false);
+  const [resultadoRevision, setResultadoRevision] = useState(null); // "aprobada" o "devuelta"
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,25 +40,64 @@ function DetalleRevisor() {
 
   const revisarSolicitud = async (aprobado) => {
     if (!aprobado && comentario.trim() === "") {
-      alert("⚠️ Debes escribir un comentario si vas a devolver la solicitud.");
+      toast.warn("⚠️ Debes escribir un comentario si vas a devolver la solicitud.", {
+        position: "top-right",
+      });
       return;
     }
 
     try {
+      setEnviando(true);
       await axios.post(
         `${import.meta.env.VITE_API_URL}/solicitudes/${id}/revision`,
         { aprobado, comentario },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(`✅ Solicitud ${aprobado ? "aprobada" : "devuelta"} correctamente`);
-      navigate("/revisor");
+
+      setResultadoRevision(aprobado ? "aprobada" : "devuelta");
     } catch (error) {
       console.error("Error al revisar:", error);
-      alert("❌ Error al procesar la revisión");
+      toast.error("❌ Error al procesar la revisión.", {
+        position: "top-right",
+      });
+    } finally {
+      setEnviando(false);
     }
   };
 
+  useEffect(() => {
+    if (resultadoRevision) {
+      toast.success(`✅ Solicitud ${resultadoRevision} correctamente`, {
+        position: "top-right",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        navigate("/revisor");
+      }, 3000);
+    }
+  }, [resultadoRevision, navigate]);
+
   if (!solicitud) return <div className="p-6">Cargando detalles...</div>;
+
+  if (resultadoRevision) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 px-4">
+        {resultadoRevision === "aprobada" ? (
+          <CheckCircle2 size={80} className="text-green-500 mb-4 animate-pulse" />
+        ) : (
+          <XCircle size={80} className="text-red-500 mb-4 animate-pulse" />
+        )}
+        <h1 className="text-2xl font-bold text-gray-700 mb-2">
+          {resultadoRevision === "aprobada" ? "¡Solicitud aprobada!" : "¡Solicitud devuelta!"}
+        </h1>
+        <p className="text-gray-600 mb-6">
+          El radicado <span className="font-semibold">{solicitud.radicado}</span> fue {resultadoRevision} exitosamente.
+        </p>
+        <p className="text-sm text-gray-500">Redirigiendo al panel de revisor...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -137,15 +179,17 @@ function DetalleRevisor() {
           <div className="flex gap-4 justify-end">
             <button
               onClick={() => revisarSolicitud(true)}
+              disabled={enviando}
               className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2"
             >
-              ✅ Aprobar
+              {enviando ? <Loader2 size={18} className="animate-spin" /> : "✅ Aprobar"}
             </button>
             <button
               onClick={() => revisarSolicitud(false)}
+              disabled={enviando}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2"
             >
-              ❌ Devolver
+              {enviando ? <Loader2 size={18} className="animate-spin" /> : "❌ Devolver"}
             </button>
           </div>
         </div>
