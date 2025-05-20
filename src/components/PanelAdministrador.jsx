@@ -62,6 +62,7 @@ function PanelAdmin() {
       setLoading(false);
     }
   };
+
   const activarModoEdicion = (usuario) => {
     setModoEdicion(usuario.id);
     setUsuarioEditando({ ...usuario, contraseña: "" });
@@ -268,7 +269,7 @@ function PanelAdmin() {
           </tbody>
         </table>
       </div>
-      {/* Paginación */}
+
       {totalPaginas > 1 && (
         <div className="flex justify-center mt-4 gap-3">
           <button
@@ -289,7 +290,6 @@ function PanelAdmin() {
         </div>
       )}
 
-      {/* Modal Crear Usuario */}
       {mostrarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 animate-fade-in">
@@ -354,7 +354,6 @@ function PanelAdmin() {
         </div>
       )}
 
-      {/* Modal Cambiar Contraseña */}
       {mostrarModalReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 animate-fade-in">
