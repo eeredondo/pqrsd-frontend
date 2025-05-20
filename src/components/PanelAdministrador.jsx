@@ -62,7 +62,6 @@ function PanelAdmin() {
       setLoading(false);
     }
   };
-
   const activarModoEdicion = (usuario) => {
     setModoEdicion(usuario.id);
     setUsuarioEditando({ ...usuario, contraseña: "" });
@@ -153,7 +152,6 @@ function PanelAdmin() {
         <ShieldCheck size={24} /> Panel de Administración
       </h2>
 
-      {/* Controles superiores */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div className="flex gap-2 items-center">
           <Search className="text-gray-500" />
@@ -191,7 +189,6 @@ function PanelAdmin() {
         </button>
       </div>
 
-      {/* Tabla */}
       <div className="overflow-x-auto border rounded shadow bg-white">
         <table className="min-w-full text-sm">
           <thead className="bg-blue-800 text-white text-left">
@@ -214,9 +211,7 @@ function PanelAdmin() {
                       onChange={(e) => setUsuarioEditando({ ...usuarioEditando, nombre: e.target.value })}
                       className="border rounded p-1 w-full"
                     />
-                  ) : (
-                    u.nombre
-                  )}
+                  ) : u.nombre}
                 </td>
                 <td className="px-4 py-3">
                   {modoEdicion === u.id ? (
@@ -225,9 +220,7 @@ function PanelAdmin() {
                       onChange={(e) => setUsuarioEditando({ ...usuarioEditando, correo: e.target.value })}
                       className="border rounded p-1 w-full"
                     />
-                  ) : (
-                    u.correo
-                  )}
+                  ) : u.correo}
                 </td>
                 <td className="px-4 py-3 capitalize">{u.rol}</td>
                 <td className="px-4 py-3 text-center flex flex-wrap gap-2 justify-center">
@@ -275,7 +268,6 @@ function PanelAdmin() {
           </tbody>
         </table>
       </div>
-
       {/* Paginación */}
       {totalPaginas > 1 && (
         <div className="flex justify-center mt-4 gap-3">
@@ -294,6 +286,104 @@ function PanelAdmin() {
           >
             Siguiente →
           </button>
+        </div>
+      )}
+
+      {/* Modal Crear Usuario */}
+      {mostrarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 animate-fade-in">
+            <h2 className="text-xl font-semibold mb-4 text-blue-700">🧑 Crear nuevo usuario</h2>
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder="Usuario"
+                value={nuevo.usuario}
+                onChange={(e) => setNuevo({ ...nuevo, usuario: e.target.value })}
+                className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={nuevo.nombre}
+                onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
+                className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <input
+                type="email"
+                placeholder="Correo"
+                value={nuevo.correo}
+                onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })}
+                className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                value={nuevo.contraseña}
+                onChange={(e) => setNuevo({ ...nuevo, contraseña: e.target.value })}
+                className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <select
+                value={nuevo.rol}
+                onChange={(e) => setNuevo({ ...nuevo, rol: e.target.value })}
+                className="border border-gray-300 rounded px-3 py-2"
+              >
+                {rolesDisponibles.map((rol) => (
+                  <option key={rol} value={rol}>
+                    {rol.charAt(0).toUpperCase() + rol.slice(1)}
+                  </option>
+                ))}
+              </select>
+              <div className="flex justify-between mt-5">
+                <button
+                  onClick={() => setMostrarModal(false)}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={crearUsuario}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2"
+                >
+                  {loading ? <Loader size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                  Crear
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cambiar Contraseña */}
+      {mostrarModalReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 animate-fade-in">
+            <h2 className="text-xl font-semibold mb-3 text-indigo-700">🔐 Cambiar contraseña</h2>
+            <p className="text-sm text-gray-600 mb-3">
+              Usuario: <strong>{usuarioReset?.usuario}</strong>
+            </p>
+            <input
+              type="password"
+              placeholder="Nueva contraseña"
+              value={nuevaContraseña}
+              onChange={(e) => setNuevaContraseña(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 w-full mb-4 focus:outline-none focus:ring focus:ring-indigo-300"
+            />
+            <div className="flex justify-between">
+              <button
+                onClick={() => setMostrarModalReset(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarResetearContraseña}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+              >
+                Cambiar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
