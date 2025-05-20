@@ -117,20 +117,46 @@ function PanelAdmin() {
   };
 
   const eliminarUsuario = async (id) => {
-    const confirmar = confirm("¿Estás seguro de eliminar este usuario?");
-    if (!confirmar) return;
+  const confirmar = confirm("¿Estás seguro de eliminar este usuario?");
+  if (!confirmar) return;
 
-    try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/usuarios/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+  try {
+    // Mostrar mensaje temporal de eliminación
+    toast.info("⏳ Eliminando usuario...", {
+      autoClose: 1000,
+      position: "top-right",
+      icon: "⚙️",
+      style: {
+        background: "#e0f2fe",
+        color: "#0369a1",
+      },
+    });
+
+    await axios.delete(`${import.meta.env.VITE_API_URL}/usuarios/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // Mostrar toast final con estilo personalizado
+    setTimeout(() => {
+      toast.success("🗑️ Usuario eliminado con éxito", {
+        icon: "🔥",
+        position: "top-right",
+        style: {
+          background: "#dc2626",
+          color: "#ffffff",
+          fontWeight: "bold",
+        },
       });
-      toast.success("🗑 Usuario eliminado");
-      obtenerUsuarios();
-    } catch (err) {
-      toast.error("❌ No se pudo eliminar el usuario");
-    }
-  };
+    }, 1000);
 
+    obtenerUsuarios();
+  } catch (err) {
+    toast.error("❌ No se pudo eliminar el usuario", {
+      position: "top-right",
+    });
+  }
+};
+  
   const usuariosFiltrados = usuarios.filter((u) => {
     const coincideBusqueda =
       u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
