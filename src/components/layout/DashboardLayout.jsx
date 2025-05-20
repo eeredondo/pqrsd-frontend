@@ -7,7 +7,8 @@ import {
   FileSearch,
   PencilRuler,
   UserCheck,
-  ShieldCheck
+  ShieldCheck,
+  Lock
 } from "lucide-react";
 
 function DashboardLayout({ children }) {
@@ -80,11 +81,23 @@ function DashboardLayout({ children }) {
             ))}
           </nav>
         </div>
+
+        {/* Pie de sidebar */}
         <div className="border-t border-blue-800 px-6 py-4 text-xs text-blue-200">
-          <div className="mb-2">
+          <div className="mb-3">
             <span className="block text-[11px] text-gray-300">Sesión activa:</span>
             <span className="font-semibold text-white">{usuario?.nombre}</span>
           </div>
+
+          {/* ✅ Nuevo botón: Cambiar contraseña */}
+          <Link
+            to="/cambiar-contrasena"
+            className="text-white hover:text-blue-200 flex items-center gap-2 text-sm mb-2"
+          >
+            <Lock size={16} /> Cambiar contraseña
+          </Link>
+
+          {/* Botón de cerrar sesión */}
           <button
             onClick={cerrarSesion}
             className="text-red-300 hover:text-red-500 flex items-center gap-2 text-sm"
