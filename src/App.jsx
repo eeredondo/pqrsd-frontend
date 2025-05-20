@@ -22,6 +22,7 @@ import DetalleRevisor from "./components/DetalleRevisor";
 import PanelFirmante from "./components/PanelFirmante";
 import DetalleFirmante from "./components/DetalleFirmante";
 import PanelAdministrador from "./components/PanelAdministrador";
+import CambiarContrasena from "./components/CambiarContrasena"; // ✅ Importación añadida
 
 function App() {
   return (
@@ -147,6 +148,16 @@ function App() {
           element={
             <DashboardLayout>
               <PanelAdministrador />
+            </DashboardLayout>
+          }
+        />
+
+        {/* ✅ Nueva ruta: Cambiar contraseña */}
+        <Route
+          path="/cambiar-contrasena"
+          element={
+            <DashboardLayout>
+              <CambiarContrasena />
             </DashboardLayout>
           }
         />
