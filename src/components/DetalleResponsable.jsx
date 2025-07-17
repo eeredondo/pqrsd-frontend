@@ -171,14 +171,6 @@ function DetalleResponsable() {
               ></iframe>
             )}
           </div>
-
-            {solicitud.archivo_url && (
-              <iframe
-                src={`${solicitud.archivo_url}#toolbar=1`}
-                className="w-full h-[1000px] border rounded mt-4"
-                title="Vista previa archivo ciudadano"
-              ></iframe>
-            )}
           <div>
             <label className="block font-semibold text-gray-700 mb-2">📄 Anexar proyecto de respuesta (.docx):</label>
             <input
