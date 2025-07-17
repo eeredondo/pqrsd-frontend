@@ -183,6 +183,7 @@ function DetalleSolicitud() {
         </div>
       </div>
 
+    console.log("URL del archivo PDF:", solicitud.archivo_url);
       {solicitud.archivo_url && (
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-gray-800 mb-2">Archivo adjunto:</h3>
