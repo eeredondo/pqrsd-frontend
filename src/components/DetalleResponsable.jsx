@@ -163,15 +163,22 @@ function DetalleResponsable() {
           <div>
             <h3 className="text-lg font-semibold text-gray-700">📬 Mensaje del ciudadano:</h3>
             <p className="bg-gray-100 p-4 rounded border text-gray-800 whitespace-pre-wrap">{solicitud.mensaje}</p>
-            {solicitud.archivo && (
+            {solicitud.archivo_url && (
               <iframe
-                src={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}#toolbar=1`}
+                src={`${solicitud.archivo_url}#toolbar=1`}
                 className="w-full h-[1000px] border rounded mt-4"
                 title="Vista previa archivo ciudadano"
               ></iframe>
             )}
           </div>
 
+            {solicitud.archivo_url && (
+              <iframe
+                src={`${solicitud.archivo_url}#toolbar=1`}
+                className="w-full h-[1000px] border rounded mt-4"
+                title="Vista previa archivo ciudadano"
+              ></iframe>
+            )}
           <div>
             <label className="block font-semibold text-gray-700 mb-2">📄 Anexar proyecto de respuesta (.docx):</label>
             <input
