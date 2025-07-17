@@ -12,7 +12,7 @@ function DetalleSolicitud() {
   const [responsables, setResponsables] = useState([]);
   const [responsableSeleccionado, setResponsableSeleccionado] = useState("");
   const [diasSeleccionados, setDiasSeleccionados] = useState("");
-  const [tipoPQRS, setTipoPQRS] = useState(""); // 👈 Nuevo estado
+  const [tipoPQRS, setTipoPQRS] = useState("");
   const [fechaVencimientoVisual, setFechaVencimientoVisual] = useState("");
   const [cargandoAsignar, setCargandoAsignar] = useState(false);
   const [asignacionExitosa, setAsignacionExitosa] = useState(false);
@@ -92,7 +92,7 @@ function DetalleSolicitud() {
       setCargandoAsignar(true);
       const formData = new FormData();
       formData.append("termino_dias", diasSeleccionados);
-      formData.append("tipo_pqrsd", tipoPQRS); // 👈 Nuevo dato enviado
+      formData.append("tipo_pqrsd", tipoPQRS);
 
       await axios.post(
         `${import.meta.env.VITE_API_URL}/solicitudes/${id}/asignar/${responsableSeleccionado}`,
@@ -135,6 +135,9 @@ function DetalleSolicitud() {
   const fechaRadicacion = solicitud.fecha_creacion && !isNaN(Date.parse(solicitud.fecha_creacion))
     ? new Date(solicitud.fecha_creacion)
     : null;
+
+  // 👇 Imprimir la URL del archivo PDF en consola para depuración
+  console.log("URL del archivo PDF:", solicitud.archivo_url);
 
   if (asignacionExitosa) {
     return (
@@ -183,7 +186,6 @@ function DetalleSolicitud() {
         </div>
       </div>
 
-    console.log("URL del archivo PDF:", solicitud.archivo_url);
       {solicitud.archivo_url && (
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-gray-800 mb-2">Archivo adjunto:</h3>
@@ -196,7 +198,7 @@ function DetalleSolicitud() {
           />
         </div>
       )}
-      
+
       <div className="mt-6">
         <label className="text-sm font-medium block mb-2">Asignar a responsable:</label>
         <select
