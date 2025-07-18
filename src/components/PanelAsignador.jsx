@@ -17,6 +17,9 @@ function PanelAsignador() {
   const [paginaActual, setPaginaActual] = useState(1);
   const solicitudesPorPagina = 10;
 
+  const [ordenCampo, setOrdenCampo] = useState(null);
+  const [ordenAscendente, setOrdenAscendente] = useState(true);
+
   const token = localStorage.getItem("token");
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -86,11 +89,6 @@ function PanelAsignador() {
     }
   };
 
-  const indiceUltimaSolicitud = paginaActual * solicitudesPorPagina;
-  const indicePrimeraSolicitud = indiceUltimaSolicitud - solicitudesPorPagina;
-  const solicitudesActuales = solicitudes.slice(indicePrimeraSolicitud, indiceUltimaSolicitud);
-  const totalPaginas = Math.ceil(solicitudes.length / solicitudesPorPagina);
-
   const cambiarPagina = (nuevaPagina) => {
     if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
     setPaginaActual(nuevaPagina);
@@ -106,9 +104,49 @@ function PanelAsignador() {
     });
   };
 
+  const ordenarPorCampo = (campo) => {
+    const nuevoOrdenAscendente = ordenCampo === campo ? !ordenAscendente : true;
+
+    const solicitudesOrdenadas = [...solicitudes].sort((a, b) => {
+      let valorA = a[campo] ?? "";
+      let valorB = b[campo] ?? "";
+
+      if (campo === "nombre") {
+        valorA = (a.nombre + " " + a.apellido).toLowerCase();
+        valorB = (b.nombre + " " + b.apellido).toLowerCase();
+      }
+
+      if (campo === "fecha_creacion" || campo === "fecha_vencimiento") {
+        valorA = new Date(valorA);
+        valorB = new Date(valorB);
+      } else {
+        valorA = valorA.toString().toLowerCase();
+        valorB = valorB.toString().toLowerCase();
+      }
+
+      if (valorA < valorB) return nuevoOrdenAscendente ? -1 : 1;
+      if (valorA > valorB) return nuevoOrdenAscendente ? 1 : -1;
+      return 0;
+    });
+
+    setSolicitudes(solicitudesOrdenadas);
+    setOrdenCampo(campo);
+    setOrdenAscendente(nuevoOrdenAscendente);
+    setPaginaActual(1);
+  };
+
+  const flechaOrden = (campo) => {
+    if (ordenCampo !== campo) return "⇅";
+    return ordenAscendente ? "⬆️" : "⬇️";
+  };
+
+  const indiceUltimaSolicitud = paginaActual * solicitudesPorPagina;
+  const indicePrimeraSolicitud = indiceUltimaSolicitud - solicitudesPorPagina;
+  const solicitudesActuales = solicitudes.slice(indicePrimeraSolicitud, indiceUltimaSolicitud);
+  const totalPaginas = Math.ceil(solicitudes.length / solicitudesPorPagina);
+
   return (
     <div className="relative p-6">
-
       {/* BOTÓN NOTIFICACIONES */}
       <div className="absolute top-0 right-0 mt-4 mr-6 z-40">
         <button onClick={() => setMostrarPanel(!mostrarPanel)} className="relative">
@@ -119,7 +157,6 @@ function PanelAsignador() {
             </span>
           )}
         </button>
-
         {mostrarPanel && (
           <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border rounded-lg z-50 max-h-96 overflow-y-auto">
             <div className="p-3 border-b font-bold text-blue-800">Notificaciones</div>
@@ -141,13 +178,10 @@ function PanelAsignador() {
 
       {/* SALUDO Y MOTIVACIÓN */}
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">
-          {saludo}, {obtenerNombreUsuario()} 👋
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">{saludo}, {obtenerNombreUsuario()} 👋</h1>
         <p className="text-indigo-600 font-semibold mt-1">{mensajeMotivacional}</p>
       </div>
 
-      {/* LÍNEA DIVISORIA */}
       <hr className="my-6 border-gray-200" />
 
       {/* TARJETAS DE RESUMEN */}
@@ -161,7 +195,6 @@ function PanelAsignador() {
             </p>
           </div>
         </div>
-
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-green-100 p-2 rounded-full">✅</div>
           <div>
@@ -171,7 +204,6 @@ function PanelAsignador() {
             </p>
           </div>
         </div>
-
         <div className="bg-white border shadow rounded-lg p-4 flex items-center gap-4">
           <div className="bg-orange-100 p-2 rounded-full">⏳</div>
           <div>
@@ -183,7 +215,6 @@ function PanelAsignador() {
         </div>
       </div>
 
-      {/* TABLA SOLICITUDES */}
       <h2 className="text-xl font-bold text-gray-800 mb-4">Solicitudes sin asignar</h2>
 
       {cargando ? (
@@ -197,11 +228,21 @@ function PanelAsignador() {
           <table className="min-w-full bg-white text-sm">
             <thead className="bg-blue-800 text-white text-left">
               <tr>
-                <th className="px-4 py-2">Radicado</th>
-                <th className="px-4 py-2">Peticionario</th>
-                <th className="px-4 py-2">Correo</th>
-                <th className="px-4 py-2">Fecha radicación</th>
-                <th className="px-4 py-2">Fecha vencimiento</th>
+                <th onClick={() => ordenarPorCampo("radicado")} className="px-4 py-2 cursor-pointer select-none hover:underline">
+                  Radicado {flechaOrden("radicado")}
+                </th>
+                <th onClick={() => ordenarPorCampo("nombre")} className="px-4 py-2 cursor-pointer select-none hover:underline">
+                  Peticionario {flechaOrden("nombre")}
+                </th>
+                <th onClick={() => ordenarPorCampo("correo")} className="px-4 py-2 cursor-pointer select-none hover:underline">
+                  Correo {flechaOrden("correo")}
+                </th>
+                <th onClick={() => ordenarPorCampo("fecha_creacion")} className="px-4 py-2 cursor-pointer select-none hover:underline">
+                  Fecha radicación {flechaOrden("fecha_creacion")}
+                </th>
+                <th onClick={() => ordenarPorCampo("fecha_vencimiento")} className="px-4 py-2 cursor-pointer select-none hover:underline">
+                  Fecha vencimiento {flechaOrden("fecha_vencimiento")}
+                </th>
                 <th className="px-4 py-2">Acción</th>
               </tr>
             </thead>
