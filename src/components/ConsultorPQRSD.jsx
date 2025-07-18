@@ -4,7 +4,6 @@ import { ArrowUpDown, FileDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import jwt_decode from "jwt-decode";
 import "react-toastify/dist/ReactToastify.css";
 
 function ConsultorPQRSD() {
@@ -29,12 +28,21 @@ function ConsultorPQRSD() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    cargarSolicitudes();
-    if (token) {
-      const decoded = jwt_decode(token);
-      setRol(decoded.rol || "");
+  const token = localStorage.getItem("token");
+  if (token) {
+    const decoded = decodeJWT(token);
+    setRol(decoded?.rol || "");
+  }
+}, []);
+
+      function decodeJWT(token) {
+      try {
+        const payload = token.split(".")[1];
+        return JSON.parse(atob(payload));
+      } catch (e) {
+        return null;
+      }
     }
-  }, []);
 
   const cargarSolicitudes = async () => {
     try {
