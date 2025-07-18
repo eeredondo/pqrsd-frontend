@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Función para decodificar JWT sin dependencia externa
+// Función para decodificar el payload del JWT sin librerías externas
 function decodeJWT(token) {
   try {
     const payload = token.split(".")[1];
@@ -39,7 +39,7 @@ function ConsultorPQRSD() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Carga inicial de datos
+    // Carga inicial
     cargarSolicitudes();
     fetchUsuarios();
     if (token) {
@@ -50,9 +50,10 @@ function ConsultorPQRSD() {
 
   const cargarSolicitudes = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/solicitudes/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/solicitudes/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setSolicitudes(res.data);
     } catch (err) {
       console.error("Error al cargar solicitudes:", err);
@@ -61,9 +62,10 @@ function ConsultorPQRSD() {
 
   const fetchUsuarios = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/usuarios/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setUsuarios(res.data);
     } catch (err) {
       console.error("Error al cargar usuarios:", err);
@@ -71,7 +73,10 @@ function ConsultorPQRSD() {
   };
 
   const cambiarOrden = (campo) => {
-    setOrden((prev) => ({ campo, asc: prev.campo === campo ? !prev.asc : true }));
+    setOrden((prev) => ({
+      campo,
+      asc: prev.campo === campo ? !prev.asc : true,
+    }));
   };
 
   const tiposExistentes = Array.from(
@@ -81,11 +86,12 @@ function ConsultorPQRSD() {
   const handleFiltroTipoChange = (e) => {
     const valor = e.target.value;
     setFiltroTipo(valor);
-    if (valor.length > 0) {
-      const sugerencias = tiposExistentes.filter((tipo) =>
-        tipo.toLowerCase().includes(valor.toLowerCase())
+    if (valor) {
+      setSugerenciasTipo(
+        tiposExistentes.filter((t) =>
+          t.toLowerCase().includes(valor.toLowerCase())
+        )
       );
-      setSugerenciasTipo(sugerencias);
     } else {
       setSugerenciasTipo([]);
     }
@@ -96,38 +102,77 @@ function ConsultorPQRSD() {
     setSugerenciasTipo([]);
   };
 
-  const filtrar = solicitudes.filter((s) => {
-    const nombreCompleto = `${s.nombre} ${s.apellido}`.toLowerCase();
+  // Filtrar y ordenar
+  const filtradas = solicitudes.filter((s) => {
+    const nombre = `${s.nombre} ${s.apellido}`.toLowerCase();
     const encargado = s.encargado_nombre?.toLowerCase() || "";
     const fecha = new Date(s.fecha_creacion);
     return (
       s.radicado.toLowerCase().includes(filtroRadicado.toLowerCase()) &&
-      nombreCompleto.includes(filtroNombre.toLowerCase()) &&
+      nombre.includes(filtroNombre.toLowerCase()) &&
       encargado.includes(filtroEncargado.toLowerCase()) &&
       (!filtroEstado || s.estado === filtroEstado) &&
       (!filtroTipo ||
-        (s.tipo_pqrsd &&
-          s.tipo_pqrsd.toLowerCase().includes(filtroTipo.toLowerCase()))) &&
+        s.tipo_pqrsd?.toLowerCase().includes(filtroTipo.toLowerCase())) &&
       (!fechaDesde || fecha >= new Date(fechaDesde)) &&
       (!fechaHasta || fecha <= new Date(fechaHasta))
     );
   });
 
-  const ordenar = [...filtrar].sort((a, b) => {
+  const ordenadas = [...filtradas].sort((a, b) => {
     const { campo, asc } = orden;
-    if (campo === "radicado")
+    if (campo === "radicado") {
       return asc
         ? a.radicado.localeCompare(b.radicado)
         : b.radicado.localeCompare(a.radicado);
-    if (campo === "fecha")
+    }
+    if (campo === "fecha") {
       return asc
         ? new Date(a.fecha_creacion) - new Date(b.fecha_creacion)
         : new Date(b.fecha_creacion) - new Date(a.fecha_creacion);
+    }
     return 0;
   });
 
+  const datosPagina = ordenadas.slice(
+    (paginaActual - 1) * porPagina,
+    paginaActual * porPagina
+  );
+  const totalPaginas = Math.ceil(ordenadas.length / porPagina);
+
+  const generarBotonesPaginacion = () => {
+    const botones = [];
+    const max = 5;
+    if (totalPaginas <= max) {
+      for (let i = 1; i <= totalPaginas; i++) botones.push(i);
+    } else if (paginaActual <= 3) {
+      botones.push(1, 2, 3, 4, "...", totalPaginas);
+    } else if (paginaActual >= totalPaginas - 2) {
+      botones.push(
+        1,
+        "...",
+        totalPaginas - 3,
+        totalPaginas - 2,
+        totalPaginas - 1,
+        totalPaginas
+      );
+    } else {
+      botones.push(
+        1,
+        "...",
+        paginaActual - 1,
+        paginaActual,
+        paginaActual + 1,
+        "...",
+        totalPaginas
+      );
+    }
+    return botones;
+  };
+
+  // Exportar
   const exportarExcel = () => {
-    const datos = ordenar.map((s) => ({
+    const datos = ordenadas.map((s) => ({
       Radicado: s.radicado,
       Fecha: new Date(s.fecha_creacion).toLocaleDateString(),
       "Fecha de finalización": s.fecha_vencimiento
@@ -144,8 +189,8 @@ function ConsultorPQRSD() {
     XLSX.writeFile(wb, "ConsultorPQRSD.xlsx");
   };
 
-  const badgeEstado = (estado) => {
-    const colores = {
+  const badgeEstado = (e) => {
+    const m = {
       Pendiente: "bg-orange-100 text-orange-700",
       Asignado: "bg-blue-100 text-blue-700",
       "En revisión": "bg-purple-100 text-purple-700",
@@ -153,29 +198,30 @@ function ConsultorPQRSD() {
       "Para notificar": "bg-gray-100 text-gray-700",
       Terminado: "bg-gray-300 text-gray-800",
     };
-    return colores[estado] || "bg-slate-100 text-slate-700";
+    return m[e] || "bg-slate-100 text-slate-700";
   };
 
-  const calcularTooltip = (fechaStr) => {
-    const venc = new Date(fechaStr);
-    const hoy = new Date();
-    const diff = Math.floor((venc - hoy) / (1000 * 60 * 60 * 24));
+  const calcularTooltip = (f) => {
+    const diff = Math.floor(
+      (new Date(f) - new Date()) / (1000 * 60 * 60 * 24)
+    );
     if (diff < 0) return `Venció hace ${Math.abs(diff)} día(s)`;
     if (diff === 0) return "Vence hoy";
     return `Faltan ${diff} día(s)`;
   };
 
+  // Acciones admin
   const eliminarSolicitud = async (id) => {
-    if (!window.confirm("¿Estás seguro de eliminar esta solicitud?")) return;
+    if (!window.confirm("¿Eliminar esta solicitud?")) return;
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/solicitudes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("Solicitud eliminada correctamente");
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/solicitudes/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Solicitud eliminada");
       cargarSolicitudes();
-    } catch (err) {
-      toast.error("Error al eliminar la solicitud");
-      console.error(err);
+    } catch {
+      toast.error("Error al eliminar");
     }
   };
 
@@ -186,90 +232,114 @@ function ConsultorPQRSD() {
         { nuevo_encargado: nuevoEncargado },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Encargado reasignado correctamente");
+      toast.success("Reasignado");
       setMostrarModalReasignar(false);
       setNuevoEncargado("");
       setSolicitudSeleccionada(null);
       cargarSolicitudes();
-    } catch (err) {
-      toast.error("Error al reasignar el encargado");
-      console.error(err);
+    } catch {
+      toast.error("Error al reasignar");
     }
-  };
-
-  const datosPagina = ordenar.slice(
-    (paginaActual - 1) * porPagina,
-    paginaActual * porPagina
-  );
-  const totalPaginas = Math.ceil(ordenar.length / porPagina);
-
-  const generarBotonesPaginacion = () => {
-    const botones = [];
-    const mostrarMax = 5;
-    if (totalPaginas <= mostrarMax) {
-      for (let i = 1; i <= totalPaginas; i++) botones.push(i);
-    } else {
-      if (paginaActual <= 3) {
-        botones.push(1, 2, 3, 4, "...", totalPaginas);
-      } else if (paginaActual >= totalPaginas - 2) {
-        botones.push(
-          1,
-          "...",
-          totalPaginas - 3,
-          totalPaginas - 2,
-          totalPaginas - 1,
-          totalPaginas
-        );
-      } else {
-        botones.push(
-          1,
-          "...",
-          paginaActual - 1,
-          paginaActual,
-          paginaActual + 1,
-          "...",
-          totalPaginas
-        );
-      }
-    }
-    return botones;
   };
 
   return (
-    <div>
+    <div className="p-4">
       <ToastContainer />
-      <h2 className="text-2xl font-bold text-blue-800 mb-4">
-        Consultor de PQRSD
-      </h2>
+      <h2 className="text-2xl font-bold mb-4">Consultor de PQRSD</h2>
 
       {/* FILTROS */}
-      {/* ... (idénticos a tu anterior) ... */}
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-3 mb-4">
+        <input
+          className="border rounded px-2 py-1"
+          placeholder="Radicado"
+          value={filtroRadicado}
+          onChange={(e) => setFiltroRadicado(e.target.value)}
+        />
+        <input
+          className="border rounded px-2 py-1"
+          placeholder="Nombre"
+          value={filtroNombre}
+          onChange={(e) => setFiltroNombre(e.target.value)}
+        />
+        <input
+          className="border rounded px-2 py-1"
+          placeholder="Encargado"
+          value={filtroEncargado}
+          onChange={(e) => setFiltroEncargado(e.target.value)}
+        />
+        <input
+          type="date"
+          className="border rounded px-2 py-1"
+          value={fechaDesde}
+          onChange={(e) => setFechaDesde(e.target.value)}
+        />
+        <input
+          type="date"
+          className="border rounded px-2 py-1"
+          value={fechaHasta}
+          onChange={(e) => setFechaHasta(e.target.value)}
+        />
+        <select
+          className="border rounded px-2 py-1"
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+        >
+          <option value="">Todos</option>
+          <option>Pendiente</option>
+          <option>Asignado</option>
+          <option>En revisión</option>
+          <option>Firmado</option>
+          <option>Para notificar</option>
+          <option>Terminado</option>
+        </select>
+        <div className="relative">
+          <input
+            className="border rounded px-2 py-1 w-full"
+            placeholder="Tipo PQRSD"
+            value={filtroTipo}
+            onChange={handleFiltroTipoChange}
+          />
+          {sugerenciasTipo.length > 0 && (
+            <ul className="absolute bg-white border rounded w-full z-10">
+              {sugerenciasTipo.map((t, i) => (
+                <li
+                  key={i}
+                  className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => seleccionarSugerencia(t)}
+                >
+                  {t}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
       {/* EXPORTAR */}
-      <div className="mb-4 flex justify-end">
+      <div className="flex justify-end mb-4">
         <button
           onClick={exportarExcel}
-          className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
         >
           <FileDown size={16} /> Exportar a Excel
         </button>
       </div>
 
       {/* TABLA */}
-      <div className="overflow-x-auto shadow border border-gray-200 rounded-lg">
-        <table className="min-w-full bg-white text-sm">
-          <thead className="bg-blue-800 text-white text-left">
+      <div className="overflow-x-auto border rounded shadow">
+        <table className="min-w-full text-sm">
+          <thead className="bg-blue-800 text-white">
             <tr>
               <th
                 className="px-4 py-2 cursor-pointer"
                 onClick={() => cambiarOrden("radicado")}
               >
-                Radicado <ArrowUpDown size={14} className="inline-block ml-1" />
+                Radicado <ArrowUpDown className="inline ml-1" size={14} />
               </th>
               <th className="px-4 py-2">Fecha</th>
-              <th className="px-4 py-2">Fecha de finalización</th>
+              <th className="px-4 py-2">Fecha fin</th>
               <th className="px-4 py-2">Peticionario</th>
-              <th className="px-4 py-2">Tipo de PQRSD</th>
+              <th className="px-4 py-2">Tipo</th>
               <th className="px-4 py-2">Encargado</th>
               <th className="px-4 py-2">Estado</th>
               <th className="px-4 py-2">Acción</th>
@@ -277,16 +347,44 @@ function ConsultorPQRSD() {
           </thead>
           <tbody>
             {datosPagina.map((s) => (
-              <tr key={s.id} className="border-t hover:bg-blue-50">
-                {/* ... demás columnas ... */}
+              <tr key={s.id} className="border-t hover:bg-gray-50">
+                <td className="px-4 py-2 font-mono">{s.radicado}</td>
+                <td className="px-4 py-2">
+                  {new Date(s.fecha_creacion).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-2">
+                  {s.fecha_vencimiento ? (
+                    <span
+                      title={calcularTooltip(s.fecha_vencimiento)}
+                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                        new Date(s.fecha_vencimiento) < new Date()
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {new Date(s.fecha_vencimiento).toLocaleDateString()}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {s.nombre} {s.apellido}
+                </td>
+                <td className="px-4 py-2">{s.tipo_pqrsd || "-"}</td>
+                <td className="px-4 py-2">{s.encargado_nombre || "-"}</td>
+                <td className="px-4 py-2">
+                  <span className={`px-2 py-1 rounded text-xs ${badgeEstado(s.estado)}`}>
+                    {s.estado}
+                  </span>
+                </td>
                 <td className="px-4 py-2 flex flex-wrap gap-2">
                   <button
                     onClick={() => navigate(`/consultor/solicitud/${s.id}`)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
                   >
-                    Ver detalles
+                    Ver
                   </button>
-
                   {rol === "admin" && (
                     <>
                       <button
@@ -294,13 +392,13 @@ function ConsultorPQRSD() {
                           setSolicitudSeleccionada(s.id);
                           setMostrarModalReasignar(true);
                         }}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
                       >
                         Reasignar
                       </button>
                       <button
                         onClick={() => eliminarSolicitud(s.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-xs"
                       >
                         Eliminar
                       </button>
@@ -314,19 +412,37 @@ function ConsultorPQRSD() {
       </div>
 
       {/* PAGINACIÓN */}
-      {/* ... idéntico ... */}
+      <div className="flex justify-center mt-4 gap-2">
+        {generarBotonesPaginacion().map((n, i) =>
+          n === "..." ? (
+            <span key={i} className="px-3 py-1">…</span>
+          ) : (
+            <button
+              key={i}
+              onClick={() => setPaginaActual(n)}
+              className={`px-3 py-1 rounded ${
+                paginaActual === n
+                  ? "bg-blue-700 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+              } text-xs`}
+            >
+              {n}
+            </button>
+          )
+        )}
+      </div>
 
       {/* MODAL REASIGNAR */}
       {mostrarModalReasignar && rol === "admin" && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-80 shadow-lg">
-            <h3 className="text-lg font-bold mb-4">Reasignar encargado</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+            <h3 className="font-bold mb-4">Reasignar responsable</h3>
             <select
+              className="w-full border rounded px-3 py-2 mb-4"
               value={nuevoEncargado}
               onChange={(e) => setNuevoEncargado(e.target.value)}
-              className="w-full border px-3 py-2 rounded mb-4 text-sm"
             >
-              <option value="">-- Seleccione usuario --</option>
+              <option value="">-- Seleccione --</option>
               {usuarios.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.nombre}
@@ -336,13 +452,13 @@ function ConsultorPQRSD() {
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setMostrarModalReasignar(false)}
-                className="px-4 py-2 text-sm bg-gray-300 hover:bg-gray-400 rounded"
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
               >
                 Cancelar
               </button>
               <button
                 onClick={reasignarEncargado}
-                className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded"
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 Guardar
               </button>
