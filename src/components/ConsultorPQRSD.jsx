@@ -120,6 +120,42 @@ function ConsultorPQRSD() {
     return `Faltan ${diff} día(s)`;
   };
 
+
+  const eliminarSolicitud = async (id) => {
+      const confirmar = window.confirm("¿Estás seguro de eliminar esta solicitud?");
+      if (!confirmar) return;
+    
+      try {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/solicitudes/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Solicitud eliminada correctamente");
+        cargarSolicitudes();
+      } catch (err) {
+        toast.error("Error al eliminar la solicitud");
+        console.error(err);
+      }
+    };
+
+  const reasignarEncargado = async () => {
+  try {
+    await axios.put(`${import.meta.env.VITE_API_URL}/solicitudes/${solicitudSeleccionada}/reasignar`, {
+      nuevo_encargado: nuevoEncargado,
+    }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    toast.success("Encargado reasignado correctamente");
+    setMostrarModalReasignar(false);
+    setNuevoEncargado("");
+    setSolicitudSeleccionada(null);
+    cargarSolicitudes();
+  } catch (err) {
+    toast.error("Error al reasignar el encargado");
+    console.error(err);
+  }
+};
+
   const datosPagina = ordenar.slice((paginaActual - 1) * porPagina, paginaActual * porPagina);
   const totalPaginas = Math.ceil(ordenar.length / porPagina);
 
