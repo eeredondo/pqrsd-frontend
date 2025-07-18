@@ -123,50 +123,36 @@ function ConsultorPQRSD() {
   const datosPagina = ordenar.slice((paginaActual - 1) * porPagina, paginaActual * porPagina);
   const totalPaginas = Math.ceil(ordenar.length / porPagina);
 
+  const generarBotonesPaginacion = () => {
+    const botones = [];
+    const mostrarMax = 5;
+
+    if (totalPaginas <= mostrarMax) {
+      for (let i = 1; i <= totalPaginas; i++) botones.push(i);
+    } else {
+      if (paginaActual <= 3) {
+        botones.push(1, 2, 3, 4, "...", totalPaginas);
+      } else if (paginaActual >= totalPaginas - 2) {
+        botones.push(1, "...", totalPaginas - 3, totalPaginas - 2, totalPaginas - 1, totalPaginas);
+      } else {
+        botones.push(1, "...", paginaActual - 1, paginaActual, paginaActual + 1, "...", totalPaginas);
+      }
+    }
+    return botones;
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-blue-800 mb-4">Consultor de PQRSD</h2>
 
       {/* FILTROS */}
       <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4 relative">
-        <input
-          type="text"
-          placeholder="Radicado"
-          value={filtroRadicado}
-          onChange={(e) => setFiltroRadicado(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <input
-          type="text"
-          placeholder="Nombre del peticionario"
-          value={filtroNombre}
-          onChange={(e) => setFiltroNombre(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <input
-          type="text"
-          placeholder="Encargado actual"
-          value={filtroEncargado}
-          onChange={(e) => setFiltroEncargado(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <input
-          type="date"
-          value={fechaDesde}
-          onChange={(e) => setFechaDesde(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <input
-          type="date"
-          value={fechaHasta}
-          onChange={(e) => setFechaHasta(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        />
-        <select
-          value={filtroEstado}
-          onChange={(e) => setFiltroEstado(e.target.value)}
-          className="border rounded px-3 py-2 text-sm"
-        >
+        <input type="text" placeholder="Radicado" value={filtroRadicado} onChange={(e) => setFiltroRadicado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+        <input type="text" placeholder="Nombre del peticionario" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+        <input type="text" placeholder="Encargado actual" value={filtroEncargado} onChange={(e) => setFiltroEncargado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+        <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+        <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="border rounded px-3 py-2 text-sm" />
+        <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="border rounded px-3 py-2 text-sm">
           <option value="">Todos</option>
           <option value="Pendiente">Pendiente</option>
           <option value="Asignado">Asignado</option>
@@ -176,23 +162,11 @@ function ConsultorPQRSD() {
           <option value="Terminado">Terminado</option>
         </select>
         <div className="relative">
-          <input
-            type="text"
-            placeholder="Tipo de PQRSD"
-            value={filtroTipo}
-            onChange={handleFiltroTipoChange}
-            className="border rounded px-3 py-2 text-sm w-full"
-          />
+          <input type="text" placeholder="Tipo de PQRSD" value={filtroTipo} onChange={handleFiltroTipoChange} className="border rounded px-3 py-2 text-sm w-full" />
           {sugerenciasTipo.length > 0 && (
             <ul className="absolute bg-white border rounded w-full z-10">
               {sugerenciasTipo.map((tipo, idx) => (
-                <li
-                  key={idx}
-                  onClick={() => seleccionarSugerencia(tipo)}
-                  className="px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm"
-                >
-                  {tipo}
-                </li>
+                <li key={idx} onClick={() => seleccionarSugerencia(tipo)} className="px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm">{tipo}</li>
               ))}
             </ul>
           )}
@@ -201,10 +175,7 @@ function ConsultorPQRSD() {
 
       {/* EXPORTAR */}
       <div className="mb-4 flex justify-end">
-        <button
-          onClick={exportarExcel}
-          className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm"
-        >
+        <button onClick={exportarExcel} className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 text-sm">
           <FileDown size={16} /> Exportar a Excel
         </button>
       </div>
@@ -265,16 +236,20 @@ function ConsultorPQRSD() {
       </div>
 
       {/* PAGINACIÓN */}
-      <div className="flex justify-center mt-4 space-x-2">
-        {Array.from({ length: totalPaginas }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setPaginaActual(i + 1)}
-            className={`px-3 py-1 rounded text-sm ${paginaActual === i + 1 ? "bg-blue-700 text-white" : "bg-gray-200 text-gray-800"}`}
-          >
-            {i + 1}
-          </button>
-        ))}
+      <div className="flex justify-center mt-6 gap-2 flex-wrap text-sm">
+        {generarBotonesPaginacion().map((n, i) =>
+          n === "..." ? (
+            <span key={i} className="px-3 py-1 text-gray-500">...</span>
+          ) : (
+            <button
+              key={i}
+              onClick={() => setPaginaActual(n)}
+              className={`px-3 py-1 rounded ${paginaActual === n ? "bg-blue-700 text-white" : "bg-gray-200 hover:bg-gray-300 text-gray-800"}`}
+            >
+              {n}
+            </button>
+          )
+        )}
       </div>
     </div>
   );
