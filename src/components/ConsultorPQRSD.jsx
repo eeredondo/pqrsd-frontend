@@ -3,6 +3,8 @@ import axios from "axios";
 import { ArrowUpDown, FileDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ConsultorPQRSD() {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -16,6 +18,9 @@ function ConsultorPQRSD() {
   const [sugerenciasTipo, setSugerenciasTipo] = useState([]);
   const [orden, setOrden] = useState({ campo: "radicado", asc: false });
   const [paginaActual, setPaginaActual] = useState(1);
+  const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+  const [nuevoEncargado, setNuevoEncargado] = useState("");
+  const [mostrarModalReasignar, setMostrarModalReasignar] = useState(false);
   const porPagina = 10;
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -32,6 +37,38 @@ function ConsultorPQRSD() {
       setSolicitudes(res.data);
     } catch (err) {
       console.error("Error al cargar solicitudes:", err);
+    }
+  };
+
+  const eliminarSolicitud = async (id) => {
+    if (!window.confirm("¿Estás seguro de eliminar esta solicitud?")) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/solicitudes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Solicitud eliminada correctamente");
+      cargarSolicitudes();
+    } catch (err) {
+      toast.error("Error al eliminar la solicitud");
+      console.error(err);
+    }
+  };
+
+  const reasignarEncargado = async () => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/solicitudes/${solicitudSeleccionada}/reasignar`,
+        { nuevo_encargado: nuevoEncargado },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Encargado reasignado correctamente");
+      setMostrarModalReasignar(false);
+      setNuevoEncargado("");
+      setSolicitudSeleccionada(null);
+      cargarSolicitudes();
+    } catch (err) {
+      toast.error("Error al reasignar el encargado");
+      console.error(err);
     }
   };
 
@@ -63,7 +100,6 @@ function ConsultorPQRSD() {
     const nombreCompleto = `${s.nombre} ${s.apellido}`.toLowerCase();
     const encargado = s.encargado_nombre?.toLowerCase() || "";
     const fecha = new Date(s.fecha_creacion);
-
     return (
       s.radicado.toLowerCase().includes(filtroRadicado.toLowerCase()) &&
       nombreCompleto.includes(filtroNombre.toLowerCase()) &&
@@ -92,7 +128,6 @@ function ConsultorPQRSD() {
       Estado: s.estado,
       Encargado: s.encargado_nombre || "Sin asignar",
     }));
-
     const ws = XLSX.utils.json_to_sheet(datos);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "PQRSD");
@@ -120,49 +155,12 @@ function ConsultorPQRSD() {
     return `Faltan ${diff} día(s)`;
   };
 
-
-  const eliminarSolicitud = async (id) => {
-      const confirmar = window.confirm("¿Estás seguro de eliminar esta solicitud?");
-      if (!confirmar) return;
-    
-      try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/solicitudes/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success("Solicitud eliminada correctamente");
-        cargarSolicitudes();
-      } catch (err) {
-        toast.error("Error al eliminar la solicitud");
-        console.error(err);
-      }
-    };
-
-  const reasignarEncargado = async () => {
-  try {
-    await axios.put(`${import.meta.env.VITE_API_URL}/solicitudes/${solicitudSeleccionada}/reasignar`, {
-      nuevo_encargado: nuevoEncargado,
-    }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    toast.success("Encargado reasignado correctamente");
-    setMostrarModalReasignar(false);
-    setNuevoEncargado("");
-    setSolicitudSeleccionada(null);
-    cargarSolicitudes();
-  } catch (err) {
-    toast.error("Error al reasignar el encargado");
-    console.error(err);
-  }
-};
-
   const datosPagina = ordenar.slice((paginaActual - 1) * porPagina, paginaActual * porPagina);
   const totalPaginas = Math.ceil(ordenar.length / porPagina);
 
   const generarBotonesPaginacion = () => {
     const botones = [];
     const mostrarMax = 5;
-
     if (totalPaginas <= mostrarMax) {
       for (let i = 1; i <= totalPaginas; i++) botones.push(i);
     } else {
@@ -179,10 +177,11 @@ function ConsultorPQRSD() {
 
   return (
     <div>
+      <ToastContainer />
       <h2 className="text-2xl font-bold text-blue-800 mb-4">Consultor de PQRSD</h2>
 
       {/* FILTROS */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4 relative">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4">
         <input type="text" placeholder="Radicado" value={filtroRadicado} onChange={(e) => setFiltroRadicado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
         <input type="text" placeholder="Nombre del peticionario" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} className="border rounded px-3 py-2 text-sm" />
         <input type="text" placeholder="Encargado actual" value={filtroEncargado} onChange={(e) => setFiltroEncargado(e.target.value)} className="border rounded px-3 py-2 text-sm" />
@@ -240,30 +239,23 @@ function ConsultorPQRSD() {
                 <td className="px-4 py-2">{new Date(s.fecha_creacion).toLocaleDateString()}</td>
                 <td className="px-4 py-2">
                   {s.fecha_vencimiento ? (
-                    <span
-                      className={`font-semibold px-2 py-1 rounded text-xs ${
-                        new Date(s.fecha_vencimiento) < new Date() ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-                      }`}
-                      title={calcularTooltip(s.fecha_vencimiento)}
-                    >
+                    <span title={calcularTooltip(s.fecha_vencimiento)} className={`font-semibold px-2 py-1 rounded text-xs ${
+                      new Date(s.fecha_vencimiento) < new Date() ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                    }`}>
                       {new Date(s.fecha_vencimiento).toLocaleDateString()}
                     </span>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
+                  ) : <span className="text-gray-400">-</span>}
                 </td>
                 <td className="px-4 py-2">{s.nombre} {s.apellido}</td>
                 <td className="px-4 py-2">{s.tipo_pqrsd || "No definido"}</td>
                 <td className="px-4 py-2">{s.encargado_nombre || "Sin asignar"}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${badgeEstado(s.estado)}`}>
-                    {s.estado}
-                  </span>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${badgeEstado(s.estado)}`}>{s.estado}</span>
                 </td>
-                <td className="px-4 py-2">
-                  <button onClick={() => navigate(`/consultor/solicitud/${s.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
-                    Ver detalles
-                  </button>
+                <td className="px-4 py-2 flex gap-2">
+                  <button onClick={() => navigate(`/consultor/solicitud/${s.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">Ver</button>
+                  <button onClick={() => { setSolicitudSeleccionada(s.id); setMostrarModalReasignar(true); }} className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs">Reasignar</button>
+                  <button onClick={() => eliminarSolicitud(s.id)} className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Eliminar</button>
                 </td>
               </tr>
             ))}
@@ -287,6 +279,30 @@ function ConsultorPQRSD() {
           )
         )}
       </div>
+
+      {/* MODAL REASIGNAR */}
+      {mostrarModalReasignar && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-80 shadow-lg">
+            <h3 className="text-lg font-bold mb-4">Reasignar encargado</h3>
+            <input
+              type="text"
+              placeholder="Nuevo encargado (usuario)"
+              value={nuevoEncargado}
+              onChange={(e) => setNuevoEncargado(e.target.value)}
+              className="w-full border px-3 py-2 rounded mb-4 text-sm"
+            />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setMostrarModalReasignar(false)} className="px-4 py-2 text-sm bg-gray-300 hover:bg-gray-400 rounded">
+                Cancelar
+              </button>
+              <button onClick={reasignarEncargado} className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded">
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
