@@ -142,9 +142,9 @@ function DetalleFirmante() {
         <div className="bg-white border rounded-xl p-6 shadow-md space-y-6 max-w-6xl mx-auto">
           <div>
             <h3 className="text-sm text-gray-600 font-medium">📎 Archivo del ciudadano:</h3>
-            {solicitud.archivo ? (
+            {solicitud.archivo_url ? (
               <iframe
-                src={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}`}
+                src={solicitud.archivo_url}
                 className="w-full h-[800px] border rounded"
                 title="Archivo ciudadano"
               ></iframe>
@@ -155,10 +155,12 @@ function DetalleFirmante() {
 
           <div>
             <h3 className="text-sm text-gray-600 font-medium">📄 Descargar Word revisado:</h3>
-            {solicitud.archivo_respuesta ? (
+            {solicitud.archivo_respuesta_url ? (
               <a
-                href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_respuesta}`}
+                href={solicitud.archivo_respuesta_url}
                 className="text-blue-600 underline inline-flex items-center"
+                target="_blank"
+                rel="noopener noreferrer"
                 download
               >
                 <FileDown className="mr-2" size={18} /> Descargar Word
