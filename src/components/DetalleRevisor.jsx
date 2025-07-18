@@ -16,7 +16,7 @@ function DetalleRevisor() {
   const [comentario, setComentario] = useState("");
   const [pestana, setPestana] = useState("pqrsd");
   const [enviando, setEnviando] = useState(false);
-  const [resultadoRevision, setResultadoRevision] = useState(null); // "aprobada" o "devuelta"
+  const [resultadoRevision, setResultadoRevision] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,10 +137,10 @@ function DetalleRevisor() {
       {pestana === "pqrsd" && (
         <div className="bg-white border rounded-xl p-6 shadow-md space-y-6 max-w-6xl mx-auto">
           <div>
-            <h3 className="text-sm text-gray-600 font-medium">📎 Archivo del ciudadano:</h3>      
-            {solicitud.archivo ? (
+            <h3 className="text-sm text-gray-600 font-medium">📎 Archivo del ciudadano:</h3>
+            {solicitud.archivo_url ? (
               <iframe
-                src={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}`}
+                src={`${solicitud.archivo_url}#toolbar=1`}
                 className="w-full h-[1000px] border rounded"
                 title="Petición Ciudadana"
               ></iframe>
@@ -149,11 +149,11 @@ function DetalleRevisor() {
             )}
           </div>
 
-          {solicitud.archivo_respuesta && (
+          {solicitud.archivo_respuesta_url && (
             <div>
               <h3 className="text-sm text-gray-600 font-medium">📥 Descargar archivo Word original:</h3>
               <a
-                href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_respuesta}`}
+                href={solicitud.archivo_respuesta_url}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 underline inline-flex items-center"
