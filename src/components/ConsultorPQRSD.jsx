@@ -4,7 +4,7 @@ import { ArrowUpDown, FileDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import jwt_decode from "jwt-decode";
+import { default as jwt_decode } from "jwt-decode";
 import "react-toastify/dist/ReactToastify.css";
 
 function ConsultorPQRSD() {
