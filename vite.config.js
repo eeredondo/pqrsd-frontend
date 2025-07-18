@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    port: 5173, // Puedes cambiar el puerto si quieres
+    port: 5173,
+  },
+  optimizeDeps: {
+    include: ['jwt-decode'], // <-- ESTA LÍNEA ES LA CLAVE
   },
 })
