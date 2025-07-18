@@ -158,13 +158,15 @@ function DetalleConsultaPQRSD() {
               </tr>
             </thead>
             <tbody className="bg-white text-gray-700">
-              {solicitud.archivo && (
+              {solicitud.archivo_url && (
                 <tr className="border-b hover:bg-blue-50">
                   <td className="px-4 py-2">Archivo del Ciudadano</td>
                   <td className="px-4 py-2">Ciudadano</td>
                   <td className="px-4 py-2">
                     <a
-                      href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo}`}
+                      href={solicitud.archivo_url}
+                      target="_blank"
+                      rel="noreferrer"
                       download
                       className="text-blue-600 hover:underline inline-flex items-center"
                     >
@@ -173,13 +175,15 @@ function DetalleConsultaPQRSD() {
                   </td>
                 </tr>
               )}
-              {solicitud.archivo_respuesta && (
+              {solicitud.archivo_respuesta_url && (
                 <tr className="border-b hover:bg-blue-50">
                   <td className="px-4 py-2">Proyecto de Respuesta</td>
                   <td className="px-4 py-2">Responsable</td>
                   <td className="px-4 py-2">
                     <a
-                      href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_respuesta}`}
+                      href={solicitud.archivo_respuesta_url}
+                      target="_blank"
+                      rel="noreferrer"
                       download
                       className="text-blue-600 hover:underline inline-flex items-center"
                     >
@@ -188,13 +192,15 @@ function DetalleConsultaPQRSD() {
                   </td>
                 </tr>
               )}
-              {solicitud.archivo_evidencia && (
+              {solicitud.archivo_evidencia_url && (
                 <tr className="border-b hover:bg-blue-50">
                   <td className="px-4 py-2">Evidencia de Notificación</td>
                   <td className="px-4 py-2">Administrador</td>
                   <td className="px-4 py-2">
                     <a
-                      href={`${import.meta.env.VITE_API_URL}/${solicitud.archivo_evidencia}`}
+                      href={solicitud.archivo_evidencia_url}
+                      target="_blank"
+                      rel="noreferrer"
                       download
                       className="text-blue-600 hover:underline inline-flex items-center"
                     >
@@ -203,7 +209,7 @@ function DetalleConsultaPQRSD() {
                   </td>
                 </tr>
               )}
-              {!solicitud.archivo && !solicitud.archivo_respuesta && !solicitud.archivo_evidencia && (
+              {!solicitud.archivo_url && !solicitud.archivo_respuesta_url && !solicitud.archivo_evidencia_url && (
                 <tr>
                   <td colSpan="3" className="px-4 py-6 text-center text-gray-400">
                     No hay archivos anexados a esta solicitud.
